@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Process</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0; /* Ensure no margin around the body */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            background-color: #f5f5f5; /* Optional: Background color for the body */
+            text-align: center;
+        }
+        .background-container {
+            width: 50%; /* Take up half of the viewport width */
+            height: 100vh; /* Full viewport height */
+            background-image: url('/static/images/bty2.webp');
+            background-position: center; /* Center the image */
+            background-size: cover; /* Cover the entire container */
+            background-repeat: no-repeat; /* Prevent repeating the image */
+            position: absolute; /* Absolute positioning to place it in the background */
+            left: 0;
+            top: 0;
+        }
+        
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 70px; /* Adjust width as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
+        .add-container {
+            position: relative; /* Relative positioning to stay within the flex container */
+            width: 40%; /* Set a width for the add container */
+            margin-left: auto; /* Push the container to the right */
+            padding: 20px; /* Optional: Padding for better spacing */
+            font-size: larger;
+        }
+
+        .add-container form {
+            display: flex; /* Use flexbox for layout */
+            flex-direction: column; /* Stack elements vertically */
+        }
+
+        .add-container form input,
+        .add-container form select,
+        .add-container form textarea {
+            margin-bottom: 15px; /* Add space below each field */
+        }
+
+        .add-container form button {
+            width: 20%; /* Set button width to 100% of its parent container */
+            padding: 10px; /* Optional: Add padding for better appearance */
+            background-color: #4CAF50; /* Optional: Background color */
+            color: white; /* Text color */
+            border: none; /* Remove default border */
+            border-radius: 5px; /* Optional: Rounded corners */
+            cursor: pointer; /* Change cursor on hover */
+            font-size: 16px; /* Adjust font size */
+            transition: background-color 0.3s; /* Smooth transition for background color */
+            margin-left: 20%;
+        }
+
+        .add-container form button:hover {
+            background-color: #45a049; /* Change background on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+    </div>
+    <div class="add-container">
+        <h1>Add Process</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">SAVE</button>
+        </form>
+    </div>
+</body>
+</html>

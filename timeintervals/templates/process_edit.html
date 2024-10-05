@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Process</title>
+</head>
+<body>
+    <h1>Edit Process</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Main Process form fields -->
+        
+        <h2>Time Intervals</h2>
+        {{ formset.management_form }}
+        {% for form in formset %}
+            <div>
+                {{ form.as_p }}  <!-- Each interval form (start_time, end_time, info) -->
+            </div>
+        {% endfor %}
+        
+        <button type="submit">Save</button>
+    </form>
+    <a href="{% url 'process_list' %}">Cancel</a>
+</body>
+</html>

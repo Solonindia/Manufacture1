@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Page</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white; /* Background color for space around the image */
+        }
+        .background-container {
+            width: 100%;
+            height: 90%; /* Adjust this to control the height of the image area */
+            background-image: url('/static/images/bty1.webp');
+            background-size: contain; /* Contain to fit the image within the area */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat;
+            padding: 6% 0; /* Adjust padding to create space above and below */
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 70px; /* Adjust width as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
+        .signup-container {
+            max-width: 400px;
+            width: 100%;
+            padding: 50px;
+            border: 1px solid #0c0c0c;
+            border-radius: 8px;
+            background-color: #f6f5fa;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            opacity: 0;
+            transform: translateY(100px);
+            animation: slideUp 2s ease-out forwards;
+        }
+
+        .signup-container h2 {
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .signup-container form {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signup-container form button[type="submit"] {
+            padding: 25px;
+            background-color: #02027c;
+            color: rgb(247, 247, 252);
+            border: none;
+            cursor: pointer;
+            width: 48%;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* Keyframes for sliding up animation */
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+        <div class="signup-container">
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="admin"><b>ADMIN</b></button>
+                <button type="submit" name="user"><b>USER</b></button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Process List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <style>
+        .logo-container {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+        }
+
+        .logo {
+            width: 70px;
+            height: auto;
+        }
+        body {
+            background-color: aliceblue;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .start {
+            background-color: rgb(198, 243, 198); /* Green for START */
+            color: darkgreen;
+        }
+        .end {
+            background-color: lightcoral; /* Red for END */
+            color: darkred;
+        }
+        .startend {
+            background-color: lightpink; /* Orange for START/END */
+            color: rgb(10, 10, 10);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+    </div>
+    <button id="export-btn">Export to Excel</button>
+    <h1>Standard Production Data</h1>
+    <table border="3" cellspacing="0" id="processTable">
+        <thead>
+            <tr>
+                <th style=background-color:rgb(230,231,227);>Date:</th>
+                <th style=background-color:rgb(230,231,227);>Project:Pragati</th>
+                <th style=background-color:rgb(230,231,227);></th>
+                {% for time in time_intervals %}
+                    <th style=background-color:rgb(230,231,227);><b>{{ time }}</b></th>
+                {% endfor %}
+                <th style=background-color:rgb(230,231,227);color:brown;>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in grouped_processes %}
+                {% with last_main_process="" last_sub_process="" %}
+                    {% for process in group %}
+                        <tr>
+                            {% if process.main_process != last_main_process %}
+                                <td rowspan="{{ group|length }}" style=background-color:rgba(155,239,253,0.397);>{{ process.main_process }}</td>
+                                {% with process.main_process as last_main_process %}{% endwith %}
+                            {% endif %}
+                            {% if process.sub_process != last_sub_process %}
+                                <td rowspan="{{ group|length }}" style=background-color:rgb(188,247,188);>{{ process.sub_process }}</td>
+                                {% with process.sub_process as last_sub_process %}{% endwith %}
+                            {% endif %}
+                            <td style=background-color:rgb(247,230,206);>{{ process.additional_info }}</td>
+                            <!-- Loop through time intervals -->
+                            {% for time in time_intervals %}
+                            <td class="time-cell" 
+                            {% for start_info in process.start_infos %}
+                                {% if start_info.time_range == time %}
+                                    style="background-color: rgb(198, 243, 198); color: darkgreen;" 
+                                {% endif %}
+                            {% endfor %} 
+                            {% for end_info in process.end_infos %}
+                                {% if end_info.time_range == time %}
+                                    style="background-color: lightcoral; color: darkred;" 
+                                {% endif %}
+                            {% endfor %} 
+                            {% for startend_info in process.startend_infos %}
+                                {% if startend_info.time_range == time %}
+                                    style="background-color: lightpink; color: rgb(10, 10, 10);" 
+                                {% endif %}
+                            {% endfor %}>
+                            
+                            {% for start_info in process.start_infos %}
+                                {% if start_info.time_range == time %}
+                                    <span>START<br>{{ start_info.info }}</span><br>
+                                {% endif %}
+                            {% endfor %}
+                            {% for end_info in process.end_infos %}
+                                {% if end_info.time_range == time %}
+                                    <span>END<br>{{ end_info.info }}</span><br>
+                                {% endif %}
+                            {% endfor %}
+                            {% for startend_info in process.startend_infos %}
+                                {% if startend_info.time_range == time %}
+                                    <span>START/END<br>{{ startend_info.info }}</span><br>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                            {% endfor %}
+                            <td style=background-color:rgb(230,231,227);>
+                                <a href="{% url 'process_edit' process.pk %}">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'process_add' %}">Add New Process</a>
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const table = document.getElementById("processTable");
+        const rows = table.getElementsByTagName("tr");
+
+        let lastMainProcess = "";
+        let lastSubProcess = "";
+
+        for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+            const currentRow = rows[i];
+            const mainProcessCell = currentRow.cells[0]; // Main process column
+            const subProcessCell = currentRow.cells[1]; // Sub process column
+
+            // Hide duplicate main processes
+            if (mainProcessCell.innerText === lastMainProcess) {
+                mainProcessCell.classList.add("hidden");
+            } else {
+                lastMainProcess = mainProcessCell.innerText;
+                const mainProcessRowSpan = calculateRowSpan(rows, i, lastMainProcess, 0);
+                if (mainProcessRowSpan > 1) {
+                    mainProcessCell.rowSpan = mainProcessRowSpan;
+                }
+            }
+
+            // Hide duplicate sub processes
+            if (subProcessCell.innerText === lastSubProcess) {
+                subProcessCell.classList.add("hidden");
+            } else {
+                lastSubProcess = subProcessCell.innerText;
+                const subProcessRowSpan = calculateRowSpan(rows, i, lastSubProcess, 1);
+                if (subProcessRowSpan > 1) {
+                    subProcessCell.rowSpan = subProcessRowSpan;
+                }
+            }
+        }
+
+        function calculateRowSpan(rows, startIndex, processValue, cellIndex) {
+            let count = 0;
+            for (let j = startIndex; j < rows.length; j++) {
+                const row = rows[j];
+                const processCell = row.cells[cellIndex];
+                if (processCell.innerText === processValue) {
+                    count++;
+                } else {
+                    break; // Stop counting if the process value changes
+                }
+            }
+            return count;
+        }
+    });
+    // Export to Excel functionality
+    document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('export-btn').addEventListener('click', function() {
+        // Clone the table to avoid modifying the original table
+        var table = document.querySelector('table').cloneNode(true);
+        
+        // Remove buttons from the cloned table
+        var buttons = table.querySelectorAll('button');
+        buttons.forEach(button => button.remove());
+
+        // Convert the modified table to a workbook
+        var workbook = XLSX.utils.table_to_book(table);
+        XLSX.writeFile(workbook, 'data.xlsx');
+    });
+});
+</script>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Analysis</title>
+</head>
+<style>
+     body{
+        text-align: center;
+     }
+     .logo-container {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+    }
+     .logo {
+            width: 70px;
+            height: auto;
+        }
+</style>
+<body>
+    <div class="logo-container">
+        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+    </div>
+    <h1>Production Analysis</h1>
+<table border="1" cellspacing="0" id="processTable">
+    <thead>
+        <tr>
+            <th>Main Process</th>
+            <th>Sub Process</th>
+            <th>Standard Start Time</th>
+            <th>Actual Start Time</th>
+            <th>Start Delay</th>
+            <th>Standard End Time</th>
+            <th>Actual End Time</th>
+            <th>End Delay</th>
+            <th>Standard StartEnd Time</th> <!-- Add this column -->
+            <th>Actual StartEnd Time</th> <!-- Add this column -->
+            <th>Planned Time (mins)</th>
+            <th>Actual Time (mins)</th>
+            <th>Difference</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.main_process }}</td>
+            <td>{{ result.sub_process }}</td>
+            <td style="color:red">{{ result.standard_start_time }}</td>
+            <td style="color:rgb(2, 121, 28)">{{ result.actual_start_time }}</td>
+            <td style="color:rgb(2, 17, 107)">{{ result.start_delay|default:"N/A" }}</td>
+            <td style="color:red">{{ result.standard_end_time }}</td>
+            <td style="color:rgb(2, 121, 28)">{{ result.actual_end_time }}</td>
+            <td style="color:rgb(2, 17, 107)">{{ result.end_delay|default:"N/A" }}</td>
+            <td style="color:red">{{ result.standard_startend_time }}</td> <!-- Add this line -->
+            <td style="color:rgb(2, 121, 28)">{{ result.actual_startend_time }}</td> <!-- Add this line -->
+            <td>{{ result.planned_time|default:"N/A" }}</td>
+            <td>{{ result.actual_time|default:"N/A" }}</td>
+            <td>{{ result.difference }} mins</td>
+            <td>{{ result.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const table = document.getElementById("processTable");
+        const rows = table.getElementsByTagName("tr");
+
+        let lastMainProcess = "";
+        let lastSubProcess = "";
+
+        for (let i = 1; i < rows.length; i++) { 
+            const currentRow = rows[i];
+            const mainProcessCell = currentRow.cells[0]; 
+            const subProcessCell = currentRow.cells[1]; 
+
+            // Handle Main Process
+            if (mainProcessCell.innerText === lastMainProcess) {
+                mainProcessCell.style.display = "none"; // Hide duplicate main process
+            } else {
+                lastMainProcess = mainProcessCell.innerText;
+                const mainProcessRowSpan = calculateRowSpan(rows, i, lastMainProcess, 0);
+                if (mainProcessRowSpan > 1) {
+                    mainProcessCell.rowSpan = mainProcessRowSpan;
+                    for (let j = 1; j < mainProcessRowSpan; j++) {
+                        rows[i + j].cells[0].style.display = "none"; // Hide the duplicated main process cells
+                    }
+                }
+            }
+
+            // Handle Sub Process
+            if (subProcessCell.innerText === lastSubProcess) {
+                subProcessCell.style.display = "none"; // Hide duplicate sub process
+            } else {
+                lastSubProcess = subProcessCell.innerText;
+                const subProcessRowSpan = calculateRowSpan(rows, i, lastSubProcess, 1);
+                if (subProcessRowSpan > 1) {
+                    subProcessCell.rowSpan = subProcessRowSpan;
+                    for (let j = 1; j < subProcessRowSpan; j++) {
+                        rows[i + j].cells[1].style.display = "none"; // Hide the duplicated sub process cells
+                    }
+                }
+            }
+        }
+
+        function calculateRowSpan(rows, startIndex, processValue, cellIndex) {
+            let count = 0;
+            for (let j = startIndex; j < rows.length; j++) {
+                const row = rows[j];
+                const processCell = row.cells[cellIndex];
+                if (processCell.innerText === processValue) {
+                    count++;
+                } else {
+                    break; 
+                }
+            }
+            return count;
+        }
+    });
+</script>
+</html>

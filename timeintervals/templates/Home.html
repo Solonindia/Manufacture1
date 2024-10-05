@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative; /* Ensure relative positioning for the Home link */
+        }
+
+        .background-container {
+            width: 100%;
+            height: 80%;
+            background-image: url('/static/images/bty.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+        }
+
+        .logo {
+            width: 70px;
+            height: auto;
+        }
+
+        .container {
+            position: fixed;
+            top: 10%;
+            left: 0;
+            height: 74%;
+            width: 15%;
+            background-color: rgba(10, 1, 58, 0.8);
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            gap: 80px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            padding: 20px;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+        .container a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .btn {
+            text-decoration: none;
+            color: rgb(250, 250, 252);
+            padding: 10px 20px;
+            text-align: left;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 11%;
+            left: 15%;
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            outline: none;
+            border-radius: 5px;
+            z-index: 10;
+        }
+
+        .toggle-btn div {
+            width: 20px;
+            height: 2px;
+            background-color: rgb(250, 250, 250);
+            margin: 2px 0;
+        }
+
+        .toggle-btn:hover {
+            background-color: rgba(250, 244, 244, 0.2);
+        }
+
+        /* Home link in the bottom left corner */
+        .home-link {
+            position: fixed;
+            bottom: 20px;
+            left: 10px;
+            font-size: 16px;
+            color: rgb(66, 4, 107);
+
+        }
+        .home-link:hover {
+            text-decoration: underline;
+            color:blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <div class="logo-container">
+            <img src="/static/images/logo.webp" alt="Logo" class="logo">
+        </div>
+        <div class="container" id="dashboardContainer">
+            <div class="links-container">
+                <a href="{% url 'signup' %}" class="btn"><b>REGISTER</b></a>
+                <a href="{% url 'process_list' %}" class="btn"><b>STANDARD PRODUCTION DATA</b></a>
+                <a href="{% url 'process_list1' %}" class="btn"><b>LIVE PRODUCTION</b></a>
+                <a href="" class="btn"><b>HISTORY</b></a>
+            </div>
+        </div>
+        <button class="toggle-btn" onclick="toggleContainer()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </button>
+
+        <!-- Home link in the bottom left corner -->
+        <a href="{% url 'button_page' %}" class="home-link"><b>Home</b></a>
+    </div>
+
+    <script>
+        function toggleContainer() {
+            const container = document.getElementById('dashboardContainer');
+            container.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>

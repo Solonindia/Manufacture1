@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Dashboard</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        .edit-button {
+            background-color: #2892f5; /* Blue */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none; /* Initially hidden */
+        }
+        th:hover .edit-button,
+        td:hover .edit-button {
+            display: inline; /* Show button on hover */
+        }
+        .hidden {
+            display: none; /* Class to hide elements */
+        }
+        .hidden-buttons {
+            display: none;
+        }
+
+        td:hover .hidden-buttons {
+            display: inline-block;
+        }
+
+        .start-btn, .end-btn,.startend-btn {
+            color: rgb(7, 7, 7);
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .start-btn {
+            background-color: green;
+        }
+
+        .end-btn {
+            background-color: red;
+        }
+        .startend-btn {
+            background-color: lightpink;
+        }
+        .status-text {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-cell {
+            position: relative;
+        }
+
+        .hidden-buttons {
+            display: none;
+        }
+
+        .status-cell:hover .hidden-buttons {
+            display: inline-block;
+        }
+        .hd {
+            display: none;
+        }
+    </style>
+    <script>
+        function updateCell(button, color, text) {
+            // Find the parent td element
+            var cell = button.closest('td');
+            
+            // Update the cell's background color
+            cell.style.backgroundColor = color;
+
+            // Update the cell's text
+            var statusText = cell.querySelector('.status-text');
+            statusText.textContent = text;
+
+            // Optionally: Ensure only one button is visible at a time
+            var buttons = cell.querySelectorAll('.start-btn, .end-btn, .startend-btn');
+            buttons.forEach(btn => {
+                btn.style.display = 'none';
+            });
+        }
+        function showSection(section) {
+            const sections = ['past', 'current', 'future'];
+            sections.forEach(s => {
+                document.getElementById(s + '-section').classList.add('hidden');
+            });
+            document.getElementById(section + '-section').classList.remove('hidden');
+        }
+
+        function toggleTimes(section) {
+            const allRows = document.querySelectorAll('tbody tr');
+            allRows.forEach(row => {
+                const pastCells = row.querySelectorAll('[id^="past-"]');
+                const currentCells = row.querySelectorAll('[id^="current-"]');
+                const futureCells = row.querySelectorAll('[id^="future-"]');
+
+                if (section === 'past') {
+                    pastCells.forEach(cell => cell.classList.remove('hidden'));
+                    currentCells.forEach(cell => cell.classList.add('hidden'));
+                    futureCells.forEach(cell => cell.classList.add('hidden'));
+                } else if (section === 'current') {
+                    pastCells.forEach(cell => cell.classList.add('hidden'));
+                    currentCells.forEach(cell => cell.classList.remove('hidden'));
+                    futureCells.forEach(cell => cell.classList.add('hidden'));
+                } else if (section === 'future') {
+                    pastCells.forEach(cell => cell.classList.add('hidden'));
+                    currentCells.forEach(cell => cell.classList.add('hidden'));
+                    futureCells.forEach(cell => cell.classList.remove('hidden'));
+                }
+            });
+        }
+        // Automatically load 'current' section on page load
+        window.onload = function() {
+            toggleTimes('current');
+        };
+        $.ajax({
+        url: '/save-data/',
+        type: 'POST',
+        data: JSON.stringify({
+            id: productionId,
+            field: fieldName,
+            value: newValue
+        }),
+        contentType: 'application/json',
+        success: function(response) {
+            console.log(response);
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+        }
+    });
+    </script>
+</head>
+<body>
+    <h1>Production Dashboard</h1>
+
+    <div style="text-align: center;">
+        <button onclick="showSection('past'); toggleTimes('past')">Past</button>
+        <button onclick="showSection('current'); toggleTimes('current')">Current</button>
+        <button onclick="showSection('future'); toggleTimes('future')">Future</button>
+    </div>
+
+    <form method="post" action="{% url 'production_dashboard' %}">
+        {% csrf_token %}
+        <table>
+            <thead class="hd">
+                <tr>
+                    <th>Date</th>
+                    <th>Project</th>
+                    <th>Operator</th>
+                    <th></th>
+                    <th class="hidden" id="past-heading">Past Times</th>
+                    <th class="hidden" id="current-heading">Current Times</th>
+                    <th class="hidden" id="future-heading">Future Times</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for production in production_values %}
+                <tr>
+                    <td><b>Date:</b>{{ production.date|date:"m/d/Y" }}</td>
+                    <td class="editable" data-field="project_name" data-id="{{ production.id }}">
+                        <b>Project:</b>{{ production.project_name }}
+                        <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'project_name', '{{ production.id }}')">Edit</button>
+                    </td>
+                    <td class="editable" data-field="operator" data-id="{{ production.id }}">
+                        {{ production.operator }}
+                        <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator', '{{ production.id }}')">Edit</button>
+                    </td>
+                    <td></td>
+                    {% for time in past_times %}
+                        <td class="hidden" id="past-{{ forloop.counter }}">{{ time }}</td>
+                    {% endfor %}
+                    {% for time in current_times %}
+                        <td class="hidden" id="current-{{ forloop.counter }}">{{ time }}</td>
+                    {% endfor %}
+                    {% for time in future_times %}
+                        <td class="hidden" id="future-{{ forloop.counter }}">{{ time }}</td>
+                    {% endfor %}
+                </tr>
+                    <tr>
+                        <td rowspan="12" class="editable" data-field="pellet_manufacturing" data-id="{{ production.id }}">
+                            <b>{{ production.pellet_manufacturing }}</b>
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'pellet_manufacturing', '{{ production.id }}')">Edit</button>
+                        </td>
+                        </tr>
+                    <tr>
+                        <td rowspan="3" class="editable" data-field="pellet_manufacturing1" data-id="{{ production.id }}">
+                            {{ production.pellet_manufacturing1 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'pellet_manufacturing1', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator1" data-id="{{ production.id }}">
+                            {{ production.operator1 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator1', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator1p" data-id="{{ production.id }}">
+                            {{ production.operator1p }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator1p', '{{ production.id }}')">Edit</button>
+                        </td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                        <tr>
+                            <td class="editable" data-field="operator2" data-id="{{ production.id }}">
+                                {{ production.operator2 }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator2', '{{ production.id }}')">Edit</button>
+                            </td>
+                            <td class="editable" data-field="operator2p" data-id="{{ production.id }}">
+                                {{ production.operator2p }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator2p', '{{ production.id }}')">Edit</button>
+                            </td>
+                            {% for time in current_times %}
+                            <td class="status-cell" id="current-{{ forloop.counter }}">
+                                <div class="status-text"></div>
+                                <div class="hidden-buttons">
+                                    <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="editable" data-field="operator3" data-id="{{ production.id }}">
+                                {{ production.operator3 }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator3', '{{ production.id }}')">Edit</button>
+                            </td>
+                            <td class="editable" data-field="operator3p" data-id="{{ production.id }}">
+                                {{ production.operator3p }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator3p', '{{ production.id }}')">Edit</button>
+                            </td>
+                            {% for time in current_times %}
+                            <td class="status-cell" id="current-{{ forloop.counter }}">
+                                <div class="status-text"></div>
+                                <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                    </tr>
+                    <tr>
+                        <td rowspan="3" class="editable" data-field="drying_of_pellets" data-id="{{ production.id }}">
+                            {{ production.drying_of_pellets }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'drying_of_pellets', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator4" data-id="{{ production.id }}">
+                            {{ production.operator4 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator4', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator4p" data-id="{{ production.id }}">
+                            {{ production.operator4p }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator4p', '{{ production.id }}')">Edit</button>
+                        </td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                        <tr>
+                            <td class="editable" data-field="operator5" data-id="{{ production.id }}">
+                                {{ production.operator5 }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator5', '{{ production.id }}')">Edit</button>
+                            </td>
+                            <td class="editable" data-field="operator5p" data-id="{{ production.id }}">
+                                {{ production.operator5p }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator5p', '{{ production.id }}')">Edit</button>
+                            </td>
+                            {% for time in current_times %}
+                            <td class="status-cell" id="current-{{ forloop.counter }}">
+                                <div class="status-text"></div>
+                                <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="editable" data-field="operator6" data-id="{{ production.id }}">
+                                {{ production.operator6 }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator6', '{{ production.id }}')">Edit</button>
+                            </td>
+                            <td class="editable" data-field="operator6p" data-id="{{ production.id }}">
+                                {{ production.operator6p }}
+                                <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator6p', '{{ production.id }}')">Edit</button>
+                            </td>
+                            {% for time in current_times %}
+                            <td class="status-cell" id="current-{{ forloop.counter }}">
+                                <div class="status-text"></div>
+                                <div class="hidden-buttons">
+                                    <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr> 
+                    </tr>
+                    <tr>
+                        <td rowspan="2" class="editable" data-field="moisture_content_test" data-id="{{ production.id }}">
+                            {{ production.moisture_content_test }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'moisture_content_test', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td rowspan="2" class="editable" data-field="operator7" data-id="{{ production.id }}">
+                            {{ production.operator7 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator7', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator7p" data-id="{{ production.id }}">
+                            {{ production.operator7p }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator7p', '{{ production.id }}')">Edit</button>
+                        </td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                        <tr>
+                        <td class="editable" data-field="operator8p" data-id="{{ production.id }}">
+                            {{ production.operator8p }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator8p', '{{ production.id }}')">Edit</button>
+                        </td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" class="editable" data-field="storage" data-id="{{ production.id }}">
+                            {{ production.storage }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'storage', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td rowspan="1" class="editable" data-field="mixing_of_anode_powder" data-id="{{ production.id }}">
+                            {{ production.mixing_of_anode_powder }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'mixing_of_anode_powder', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator8" data-id="{{ production.id }}">
+                            {{ production.operator8 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator8', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                      <td class="editable" data-field="pellet_manufacturing_anode" data-id="{{ production.id }}">
+                        {{ production.pellet_manufacturing_anode }}
+                        <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'pellet_manufacturing_anode', '{{ production.id }}')">Edit</button>
+                    </td>
+                      <td class="editable" data-field="operator9" data-id="{{ production.id }}">
+                        {{ production.operator9 }}
+                        <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator9', '{{ production.id }}')">Edit</button>
+                    </td>
+                    <td></td>
+                    {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr> 
+                </tr>
+                    <tr>
+                        <td rowspan="11" class="editable" data-field="battery_assembly" data-id="{{ production.id }}">
+                            <b>{{ production.battery_assembly }}</b>
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'battery_assembly', '{{ production.id }}')">Edit</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="transfer_of_electrodes_and_components" data-id="{{ production.id }}">
+                            {{ production.transfer_of_electrodes_and_components }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'transfer_of_electrodes_and_components', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td rowspan="2" class="editable" data-field="operator10" data-id="{{ production.id }}">
+                            {{ production.operator10 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator10', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="cell_assembly" data-id="{{ production.id }}">
+                            {{ production.cell_assembly }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'cell_assembly', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="stack_assembly" data-id="{{ production.id }}">
+                            {{ production.stack_assembly }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'stack_assembly', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td class="editable" data-field="operator11" data-id="{{ production.id }}">
+                            {{ production.operator11 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator11', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="stack_insulation_wrapping" data-id="{{ production.id }}">
+                            {{ production.stack_insulation_wrapping }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'stack_insulation_wrapping', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td rowspan="6" class="editable" data-field="operator12" data-id="{{ production.id }}">
+                            {{ production.operator12 }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'operator12', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="spot_welding_of_terminals" data-id="{{ production.id }}">
+                            {{ production.spot_welding_of_terminals }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'spot_welding_of_terminals', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="stack_drying" data-id="{{ production.id }}">
+                            {{ production.stack_drying }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'stack_drying', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="battery_welding" data-id="{{ production.id }}">
+                            {{ production.battery_welding }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'battery_welding', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="leak_check_for_batteries" data-id="{{ production.id }}">
+                            {{ production.leak_check_for_batteries }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'leak_check_for_batteries', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="static_parameters_inspection" data-id="{{ production.id }}">
+                            {{ production.static_parameters_inspection }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'static_parameters_inspection', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="editable" data-field="handover_to_qc" data-id="{{ production.id }}">
+                            {{ production.handover_to_qc }}
+                            <button type="button" class="edit-button" onclick="makeEditable(this.parentNode, 'handover_to_qc', '{{ production.id }}')">Edit</button>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        {% for time in current_times %}
+                        <td class="status-cell" id="current-{{ forloop.counter }}">
+                            <div class="status-text"></div>
+                            <div class="hidden-buttons">
+                                <button class="start-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'green', 'Start')"><b>Start</b></button>
+                                <button class="end-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'red', 'End')"><b>End</b></button>
+                                <button class="startend-btn" data-id="{{ forloop.counter }}" onclick="updateCell(this, 'pink', 'Start End')"><b>Both</b></button>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div id="past-section" class="hidden">
+        </div>
+        <div id="current-section" class="hidden">
+        </div>
+        <div id="future-section" class="hidden">
+        </div>
+    </form>
+    <script>
+        showSection('past');
+        toggleTimes('past');
+        
+        let currentElement = null;
+        let currentField = '';
+        let currentId = '';
+
+        function makeEditable(element, field, id) {
+            const currentText = element.innerText.trim();
+            currentElement = element; // Store the current element for saving
+            currentField = field;
+            currentId = id;
+
+            element.innerHTML = ''; // Clear the current text
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = ''; // Set the input value to current text
+            element.appendChild(input);
+            input.focus();
+
+            const saveButton = document.createElement('button');
+            saveButton.innerText = 'Save';
+            saveButton.className = 'save-button';
+            saveButton.onclick = saveChanges; // Attach save function
+            element.appendChild(saveButton); // Add save button next to input
+        }
+
+        function saveChanges() {
+            const input = currentElement.querySelector('input');
+            const newText = input.value.trim();
+            saveToDatabase(currentId, currentField, newText)
+                .then(() => {
+                    currentElement.innerHTML = newText; // Update the cell text
+                    addEditButton(currentElement); // Add the Edit button back
+                });
+        }
+
+        function addEditButton(element) {
+            const editButton = document.createElement('button');
+            editButton.innerText = 'Edit';
+            editButton.className = 'edit-button';
+            editButton.onclick = function() {
+                makeEditable(element, currentField, currentId);
+            };
+            element.appendChild(editButton); // Add Edit button back
+        }
+
+        function saveToDatabase(id, field, newText) {
+            return fetch('/save-data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: id, field: field, value: newText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    console.error('Error saving data');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const startButtons = document.querySelectorAll('.start-btn');
+            const endButtons = document.querySelectorAll('.end-btn');
+            const startendButtons = document.querySelectorAll('.startend-btn');
+
+            // Track timers for each row by ID
+            const timers = {};
+
+            // Function to start the timer
+            function startTimer(button) {
+                const id = button.getAttribute('data-id');
+                const type = button.getAttribute('data-type');
+
+                if (!timers[id]) {
+                    timers[id] = Date.now(); // Start timer for this specific row
+                    button.disabled = true; // Disable this specific start button
+
+                    // Enable the corresponding end button for this row
+                    const endButton = document.querySelector(`.end-btn[data-id="${id}"]`);
+                    if (endButton) {
+                        endButton.disabled = false;
+                    }
+
+                    // Apply green background to the table cell for this row
+                    const cell = document.getElementById(`${type}-${id}`);
+                    if (cell) {
+                        cell.classList.remove('red-background'); // Remove red if present
+                        cell.classList.add('green-background'); // Add green background
+                    }
+
+                    alert(`Are you sure to Start`);
+                } else {
+                    alert(`Timer already running for ${type} ${id}`);
+                }
+            }
+
+            // Function to end the timer
+            function endTimer(button) {
+                const id = button.getAttribute('data-id');
+                const type = button.getAttribute('data-type');
+
+                if (timers[id]) {
+                    const elapsedTime = Date.now() - timers[id];
+                    alert(`Timer stopped for ID ${id}. Elapsed time: ${elapsedTime / 1000} seconds.`);
+
+                    // Clear the timer for this specific row
+                    delete timers[id];
+
+                    // Disable this specific end button and re-enable the start button
+                    button.disabled = true;
+                    const startButton = document.querySelector(`.start-btn[data-id="${id}"]`);
+                    if (startButton) {
+                        startButton.disabled = false;
+                    }
+
+                    // Apply red background to the table cell for this row
+                    const cell = document.getElementById(`${type}-${id}`);
+                    if (cell) {
+                        cell.classList.remove('green-background'); // Remove green if present
+                        cell.classList.add('red-background'); // Add red background
+                    }
+                } else {
+                    alert(`Are you sure to end`);
+                }
+            }
+
+            // Event listeners for start buttons
+            startButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent page refresh
+                    startTimer(this);
+                });
+            });
+
+            // Event listeners for end buttons
+            endButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent page refresh
+                    endTimer(this);
+                });
+            });
+
+            // Event listeners for startend buttons
+            startendButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent page refresh
+                    const id = this.getAttribute('data-id');
+
+                    if (!timers[id]) {
+                        startTimer(this);
+                        this.textContent = 'End'; // Update button text to 'End'
+                    } else {
+                        endTimer(this);
+                        this.textContent = 'Start'; // Update button text to 'Start'
+                    }
+                });
+            });
+        });
+</script>
+</body>
+</html>

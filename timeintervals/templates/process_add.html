@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Process</title>
+</head>
+<body>
+    <h1>Add Process</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <h2>Main Process Details</h2>
+            {{ form.as_p }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div style="color: red;">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div>
+            <h3>Intervals</h3>
+            {{ formset.management_form }}
+            {{ formset.as_p }}
+            {% for form in formset %}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div style="color: red;">{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <button type="submit">Add Process</button>
+    </form>
+    <a href="{% url 'process_list' %}">Cancel</a>
+</body>
+</html>

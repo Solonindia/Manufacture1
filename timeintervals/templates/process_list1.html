@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process List</title>
+    <style>
+        .logo-container {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+        }
+
+        .logo {
+            width: 70px;
+            height: auto;
+        }
+        body {
+            background-color: aliceblue;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .start {
+            background-color: rgb(198, 243, 198); /* Green for START */
+            color: darkgreen;
+        }
+        .end {
+            background-color: lightcoral; /* Red for END */
+            color: darkred;
+        }
+        .startend {
+            background-color: lightpink; /* Orange for START/END */
+            color: rgb(10, 10, 10);
+        }
+        .edit-mode input {
+            width: 200px;
+            text-align: center;
+        }
+        button {
+            margin: 10px;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        /* Hide the edit button initially */
+        #projectNameDisplay {
+            display: flex;
+            justify-content: space-between;
+        }
+        #editButton {
+            display: none;
+        }
+        /* Show the edit button on hover */
+        th:hover #editButton {
+            display: inline-block;
+        }
+        .last-links{
+            color:darkblue;
+        }
+        .last-links:hover{
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+    </div>
+    <button><a href="{% url 'process_full' %}">Full</a></button>
+    <button><a href="{% url 'process_list1' %}">Current</a></button>
+    
+    <h1>Production Live</h1>
+    
+    <table border="1" cellspacing="0" id="processTable">
+        <thead>
+            <tr>
+                <th style=background-color:rgb(230,231,227);>Date: <span id="currentDate"></span></th>
+                <th style=background-color:rgb(230,231,227);>
+                    Project: 
+                    <div id="projectNameContainer" class="edit-mode">
+                        <input type="text" id="projectNameInput" placeholder="Enter project name" />
+                        <button id="saveButton">Save</button>
+                    </div><br>
+                    <div id="projectNameDisplay" class="hidden">
+                        <span id="projectNameText"></span>
+                        <button id="editButton">Edit</button>
+                    </div>
+                </th>
+                <th style=background-color:rgb(230,231,227);></th>
+                {% for time in time_intervals %}
+                    <th style=background-color:rgb(230,231,227);>{{ time }}</th>
+                {% endfor %}
+                <th colspan="2" style=background-color:rgb(230,231,227);>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in grouped_processes %}
+                {% with last_main_process="" last_sub_process="" %}
+                    {% for process in group %}
+                        <tr>
+                            {% if process.main_process != last_main_process %}
+                                <td rowspan="{{ group|length }}" style=background-color:rgba(155,239,253,0.397);>{{ process.main_process }}</td>
+                                {% with process.main_process as last_main_process %}{% endwith %}
+                            {% endif %}
+                            
+                            {% if process.sub_process != last_sub_process %}
+                                <td rowspan="{{ group|length }}" style=background-color:rgb(188,247,188);>{{ process.sub_process }}</td>
+                                {% with process.sub_process as last_sub_process %}{% endwith %}
+                            {% endif %}
+                            <td style=background-color:rgb(247,230,206);>{{ process.additional_info }}</td>
+                            <!-- Loop through time intervals -->
+                            {% for time in time_intervals %}
+                            <td class="time-cell" 
+                            {% for start_info in process.start_infos %} 
+                                {% if start_info.time_range == time %} 
+                                    style="background-color: rgb(198, 243, 198); color: darkgreen;" 
+                                {% endif %} 
+                            {% endfor %} 
+                            {% for end_info in process.end_infos %} 
+                                {% if end_info.time_range == time %} 
+                                    style="background-color: lightcoral; color: darkred;" 
+                                {% endif %} 
+                            {% endfor %} 
+                            {% for startend_info in process.startend_infos %} 
+                                {% if startend_info.time_range == time %} 
+                                    style="background-color: lightpink; color: rgb(10, 10, 10);" 
+                                {% endif %} 
+                            {% endfor %}>
+                            
+                            {% for start_info in process.start_infos %} 
+                                {% if start_info.time_range == time %} 
+                                    <span>START<br>{{ start_info.info }}</span><br> 
+                                {% endif %} 
+                            {% endfor %}
+                            {% for end_info in process.end_infos %} 
+                                {% if end_info.time_range == time %} 
+                                    <span>END<br>{{ end_info.info }}</span><br> 
+                                {% endif %} 
+                            {% endfor %}
+                            {% for startend_info in process.startend_infos %} 
+                                {% if startend_info.time_range == time %} 
+                                    <span>START/END<br>{{ startend_info.info }}</span><br> 
+                                {% endif %} 
+                            {% endfor %}
+                        </td>
+                            {% endfor %}
+                            
+                            <td>
+                                <a href="{% url 'process_edit1' process.pk %}">Edit</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'process_edit2' process.pk %}">Add</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="last-links">
+    <a href="{% url 'process_add1' %}">Add New Process</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="{% url 'analysis' %}">Analysis</a><br>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        const projectNameContainer = document.getElementById("projectNameContainer");
+        const projectNameInput = document.getElementById("projectNameInput");
+        const saveButton = document.getElementById("saveButton");
+        const projectNameDisplay = document.getElementById("projectNameDisplay");
+        const projectNameText = document.getElementById("projectNameText");
+        const editButton = document.getElementById("editButton");
+
+        // Load the saved project name from localStorage
+        const savedProjectName = localStorage.getItem("projectName");
+        if (savedProjectName) {
+            projectNameText.textContent = savedProjectName;
+            projectNameContainer.classList.add("hidden");
+            projectNameDisplay.classList.remove("hidden");
+        }
+
+        // Save the project name when clicking "Save"
+        saveButton.addEventListener("click", function() {
+            const projectName = projectNameInput.value.trim();
+            if (projectName) {
+                projectNameText.textContent = projectName;
+                projectNameContainer.classList.add("hidden");
+                projectNameDisplay.classList.remove("hidden");
+                // Store the project name in localStorage
+                localStorage.setItem("projectName", projectName);
+            }
+        });
+
+        // Edit project name when clicking "Edit"
+        editButton.addEventListener("click", function() {
+            projectNameContainer.classList.remove("hidden");
+            projectNameDisplay.classList.add("hidden");
+        });
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+            const table = document.getElementById("processTable");
+            const rows = table.getElementsByTagName("tr");
+
+            let lastMainProcess = "";
+            let lastSubProcess = "";
+
+            for (let i = 1; i < rows.length; i++) { 
+                const currentRow = rows[i];
+                const mainProcessCell = currentRow.cells[0]; 
+                const subProcessCell = currentRow.cells[1]; 
+
+                if (mainProcessCell.innerText === lastMainProcess) {
+                    mainProcessCell.classList.add("hidden");
+                } else {
+                    lastMainProcess = mainProcessCell.innerText;
+                    const mainProcessRowSpan = calculateRowSpan(rows, i, lastMainProcess, 0);
+                    if (mainProcessRowSpan > 1) {
+                        mainProcessCell.rowSpan = mainProcessRowSpan;
+                    }
+                }
+
+                if (subProcessCell.innerText === lastSubProcess) {
+                    subProcessCell.classList.add("hidden");
+                } else {
+                    lastSubProcess = subProcessCell.innerText;
+                    const subProcessRowSpan = calculateRowSpan(rows, i, lastSubProcess, 1);
+                    if (subProcessRowSpan > 1) {
+                        subProcessCell.rowSpan = subProcessRowSpan;
+                    }
+                }
+            }
+
+            function calculateRowSpan(rows, startIndex, processValue, cellIndex) {
+                let count = 0;
+                for (let j = startIndex; j < rows.length; j++) {
+                    const row = rows[j];
+                    const processCell = row.cells[cellIndex];
+                    if (processCell.innerText === processValue) {
+                        count++;
+                    } else {
+                        break; 
+                    }
+                }
+                return count;
+            }
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+        const currentDateElement = document.getElementById("currentDate");
+        
+        // Get current date
+        const today = new Date();
+        const formattedDate = today.getDate() + '-' + 
+                              String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                              String(today.getFullYear()).padStart(2, '0');
+        
+        // Set the current date in the span
+        currentDateElement.textContent = formattedDate;
+    });
+    
+    </script>
+</body>
+</html>
