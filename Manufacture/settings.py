@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'display',
     'timeintervals',
     'status',
 ]
@@ -109,9 +108,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# settings.py
+
 CSRF_TRUSTED_ORIGINS = [
-    'https://res-production-exaaahe5befja0bv.canadacentral-01.azurewebsites.net/',
+    'https://res-production-exaaahe5befja0bv.canadacentral-01.azurewebsites.net',
 ]
+
 
 
 # Internationalization
