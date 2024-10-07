@@ -136,17 +136,16 @@ def process_add(request):
                 interval.process = process  # Associate the interval with the process
 
                 # Ensure that start_time and end_time are valid
-                if interval.start_time and interval.end_time:
+                if interval.start_time and interval.end_time and interval.startend_time:
                     start_dt = datetime.combine(timezone.now().date(), interval.start_time)
                     end_dt = datetime.combine(timezone.now().date(), interval.end_time)
+                    startend_dt = datetime.combine(timezone.now().date(), interval.startend_time)
+
 
                     # Check if end_time is later than start_time
                     if end_dt <= start_dt:
                         formset.errors.append("End time must be later than start time.")
                         return render(request, 'process_add.html', {'form': form, 'formset': formset})
-
-                    # Calculate midpoint for startend_time
-                    interval.startend_time = (start_dt + (end_dt - start_dt) / 2).time()
 
                 interval.save()  # Now save the interval
 

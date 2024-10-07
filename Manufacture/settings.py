@@ -81,9 +81,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'production',
-        'USER' : 'root',
-        'PASSWORD' : 'Krsna@538',
-        'HOST' : 'localhost',
+        'USER' : 'PRODUCTIONRES',
+        'PASSWORD' : 'Res$2024',
+        'HOST' : 'productionres.mysql.database.azure.com',
         'PORT' : 3306
     }
 }
