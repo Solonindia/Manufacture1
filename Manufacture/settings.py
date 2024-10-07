@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-62p9^fpu0so@zx#)ui=bz%^pift)=a%yl)5z)e_%=n_18ix(me
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['res-production-exaaahe5befja0bv.canadacentral-01.azurewebsites.net',
+                '127.0.0.1', 
+                'localhost']
 
 
 # Application definition
@@ -105,6 +107,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://res-production-exaaahe5befja0bv.canadacentral-01.azurewebsites.net/',
 ]
 
 
