@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'Manufacture.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'production',
+        'NAME': 'display',
         'USER' : 'PRODUCTIONRES',
         'PASSWORD' : 'Res$2024',
         'HOST' : 'productionres.mysql.database.azure.com',
