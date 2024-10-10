@@ -1,5 +1,5 @@
 from django.db import models
-
+    
 class Process1(models.Model):
     main_process = models.CharField(max_length=100, null=True)
     sub_process = models.CharField(max_length=100, null=True)

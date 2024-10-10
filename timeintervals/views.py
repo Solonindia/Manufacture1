@@ -81,7 +81,7 @@ def process_list(request):
 
     while start_time < end_time:
         next_time = start_time + timedelta(minutes=10)
-        time_intervals.append(f"{start_time.strftime('%I:%M %p')}-{next_time.strftime('%I:%M %p')}")
+        time_intervals.append(f"{start_time.strftime('%H:%M')}-{next_time.strftime('%H:%M')}")
         start_time = next_time
 
     for group in grouped_processes:
@@ -95,20 +95,20 @@ def process_list(request):
 
             for interval in process.intervals.all():
                 if interval.start_time:
-                    formatted_start_time = interval.start_time.strftime('%I:%M %p')
-                    next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_start_time = interval.start_time.strftime('%H:%M')
+                    next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_start_time}-{next_start_time}"
                     start_infos.append({'time_range': time_range, 'info': interval.start_info})
 
                 if interval.end_time:
-                    formatted_end_time = interval.end_time.strftime('%I:%M %p')
-                    next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_end_time = interval.end_time.strftime('%H:%M')
+                    next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_end_time}-{next_end_time}"
                     end_infos.append({'time_range': time_range, 'info': interval.end_info})
 
                 if interval.startend_time:
-                    formatted_startend_time = interval.startend_time.strftime('%I:%M %p')
-                    next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_startend_time = interval.startend_time.strftime('%H:%M')
+                    next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_startend_time}-{next_startend_time}"
                     startend_infos.append({'time_range': time_range, 'info': interval.start_info})
 
@@ -140,7 +140,6 @@ def process_add(request):
                     start_dt = datetime.combine(timezone.now().date(), interval.start_time)
                     end_dt = datetime.combine(timezone.now().date(), interval.end_time)
                     startend_dt = datetime.combine(timezone.now().date(), interval.startend_time)
-
 
                     # Check if end_time is later than start_time
                     if end_dt <= start_dt:
@@ -186,19 +185,18 @@ def process_edit(request, pk):
 
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Process1,ProcessInterval1
+from .models import ProcessInterval1
 from .forms import ProcessForm1, ProcessIntervalFormSet1
 from datetime import datetime, timedelta
 from itertools import groupby
 from django.utils import timezone
-from .utils import compare_process_times
 import pandas as pd
 
 def Home(request):
     return render(request, 'Home.html')
 
 def process_list1(request):
-    processes = Process1.objects.prefetch_related('intervals').all().order_by('created_at')
+    processes = Process.objects.prefetch_related('intervals1').all().order_by('created_at')
     
     grouped_processes = []
     
@@ -208,15 +206,14 @@ def process_list1(request):
 
     # Get current time
     now = datetime.now()
-    start_time = now - timedelta(hours=0)  # Start from 1 hour before current time
-    end_time = now + timedelta(hours=6)    # End at 5 hours after current time
+    start_time = now.replace(second=0, microsecond=0, minute=(now.minute // 10) * 10)  # Round down to the nearest 10 minutes
+    end_time = now + timedelta(hours=6)    # End at 6 hours after current time
 
     time_intervals = []
-    start_time = start_time.replace(second=0, microsecond=0, minute=(start_time.minute // 10) * 10)  # Round down to the nearest 10 minutes
 
     while start_time < end_time:
         next_time = start_time + timedelta(minutes=10)
-        time_range = f"{start_time.strftime('%I:%M %p')}-{next_time.strftime('%I:%M %p')}"
+        time_range = f"{start_time.strftime('%H:%M')}-{next_time.strftime('%H:%M')}"
         time_intervals.append(time_range)
         start_time = next_time
 
@@ -226,27 +223,27 @@ def process_list1(request):
             end_infos = []
             startend_infos = []
             
-            # Get the additional_info directly from the process
             additional_info = process.additional_info  
 
-            for interval in process.intervals.all():
+            for interval in process.intervals1.all():  # Use intervals1 only
                 if interval.start_time:
-                    formatted_start_time = interval.start_time.strftime('%I:%M %p')
-                    next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_start_time = interval.start_time.strftime('%H:%M')
+                    next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_start_time}-{next_start_time}"
                     start_infos.append({'time_range': time_range, 'info': interval.start_info})
 
                 if interval.end_time:
-                    formatted_end_time = interval.end_time.strftime('%I:%M %p')
-                    next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_end_time = interval.end_time.strftime('%H:%M')
+                    next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_end_time}-{next_end_time}"
                     end_infos.append({'time_range': time_range, 'info': interval.end_info})
 
-                if interval.startend_time:
-                    formatted_startend_time = interval.startend_time.strftime('%I:%M %p')
-                    next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                # Use the correct attribute name here
+                if interval.startend_time:  
+                    formatted_startend_time = interval.startend_time.strftime('%H:%M')
+                    next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_startend_time}-{next_startend_time}"
-                    startend_infos.append({'time_range': time_range, 'info': interval.start_info})
+                    startend_infos.append({'time_range': time_range, 'info': interval.start_info})  # Change 'start_info' if necessary
 
             # Attach start, end, and startend information to the process
             process.start_infos = start_infos
@@ -259,9 +256,8 @@ def process_list1(request):
         'time_intervals': time_intervals,
     })
 
-
 def process_full(request):
-    processes = Process1.objects.prefetch_related('intervals').all().order_by('created_at')
+    processes = Process.objects.prefetch_related('intervals1').all().order_by('created_at')
     
     grouped_processes = []
     
@@ -275,37 +271,34 @@ def process_full(request):
 
     while start_time < end_time:
         next_time = start_time + timedelta(minutes=10)
-        time_intervals.append(f"{start_time.strftime('%I:%M %p')}-{next_time.strftime('%I:%M %p')}")
+        time_intervals.append(f"{start_time.strftime('%H:%M')}-{next_time.strftime('%H:%M')}")
         start_time = next_time
 
     for group in grouped_processes:
         for process in group:
             start_infos = []
             end_infos = []
-            startend_infos = []
-            
-            # Get the additional_info directly from the process
+            startend_infos = []            
             additional_info = process.additional_info  
 
-            for interval in process.intervals.all():
+            for interval in process.intervals1.all():  # Use intervals1 only
                 if interval.start_time:
-                    formatted_start_time = interval.start_time.strftime('%I:%M %p')
-                    next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_start_time = interval.start_time.strftime('%H:%M')
+                    next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_start_time}-{next_start_time}"
                     start_infos.append({'time_range': time_range, 'info': interval.start_info})
 
                 if interval.end_time:
-                    formatted_end_time = interval.end_time.strftime('%I:%M %p')
-                    next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_end_time = interval.end_time.strftime('%H:%M')
+                    next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_end_time}-{next_end_time}"
                     end_infos.append({'time_range': time_range, 'info': interval.end_info})
 
                 if interval.startend_time:
-                    formatted_startend_time = interval.startend_time.strftime('%I:%M %p')
-                    next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%I:%M %p')
+                    formatted_startend_time = interval.startend_time.strftime('%H:%M')
+                    next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%H:%M')
                     time_range = f"{formatted_startend_time}-{next_startend_time}"
                     startend_infos.append({'time_range': time_range, 'info': interval.start_info})
-
 
             # Attach start, end, and startend information to the process
             process.start_infos = start_infos
@@ -329,25 +322,9 @@ def process_add1(request):
 
     return render(request, 'process_add1.html', {'form': form})
 
-def process_edit1(request, pk):
-    process = get_object_or_404(Process1, pk=pk)
-    
-    if request.method == 'POST':
-        form = ProcessForm1(request.POST, instance=process)
-        
-        if form.is_valid():
-            form.save()  # Save the main process
-            return redirect('process_list1')
-    else:
-        form = ProcessForm1(instance=process)
-
-    return render(request, 'process_edit1.html', {
-        'form': form,
-    })
 
 def process_edit2(request,pk):
-    process = get_object_or_404(Process1, pk=pk)
-    results = compare_process_times()
+    process = get_object_or_404(Process, pk=pk)
     if request.method == 'POST':
         formset = ProcessIntervalFormSet1(request.POST, instance=process)
 
@@ -377,17 +354,9 @@ def process_edit2(request,pk):
     else:
         formset = ProcessIntervalFormSet1(queryset=ProcessInterval1.objects.none())  # Ensures empty formset on GET
 
-    return render(request, 'process_edit2.html', {'formset': formset,'results': results})
+    return render(request, 'process_edit2.html', {'formset': formset})
 
 
-from django.shortcuts import render
-from .models import Process, Process1
-from .utils import compare_process_times  # Assuming you saved the comparison logic in utils.py
 
-def compare_process_view(request):
-
-    results = compare_process_times()
-    
-    return render(request, 'compare_process.html', {'results': results})
 
 

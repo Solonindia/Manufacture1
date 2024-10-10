@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Process Details</title>
+    <style>
+        body {
+            background-color: aliceblue;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #080808;
+            padding: 8px;
+        }
+        th {
+            background-color: rgb(230, 231, 227);
+        }
+        .hidden {
+            display: none; /* Use this class to hide duplicate cells */
+        }
+    </style>
+</head>
+<body>
+    <h1>Process Details</h1>
+    <table border="1" cellspacing="0" id="processTable">
+        <thead>
+            <tr>
+                <th>Main Process</th>
+                <th>Sub Process</th>
+                <th>Additional Info</th>
+                <th>Time Intervals</th> <!-- New Column for Time Intervals -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for process in processes %}
+            <tr>
+                <td>{{ process.main_process }}</td>
+                <td>{{ process.sub_process }}</td>
+                <td>{{ process.additional_info }}</td>
+                <td>{{ time_intervals_str }}</td> <!-- Use the joined string here -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const table = document.getElementById("processTable");
+            const rows = table.getElementsByTagName("tr");
+
+            let lastMainProcess = "";
+            let lastSubProcess = "";
+
+            for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+                const currentRow = rows[i];
+                const mainProcessCell = currentRow.cells[0]; // Main process column
+                const subProcessCell = currentRow.cells[1]; // Sub process column
+
+                // Hide duplicate main processes
+                if (mainProcessCell.innerText === lastMainProcess) {
+                    mainProcessCell.classList.add("hidden");
+                } else {
+                    lastMainProcess = mainProcessCell.innerText;
+                    const mainProcessRowSpan = calculateRowSpan(rows, i, lastMainProcess, 0);
+                    if (mainProcessRowSpan > 1) {
+                        mainProcessCell.rowSpan = mainProcessRowSpan;
+                    }
+                }
+
+                // Hide duplicate sub processes
+                if (subProcessCell.innerText === lastSubProcess) {
+                    subProcessCell.classList.add("hidden");
+                } else {
+                    lastSubProcess = subProcessCell.innerText;
+                    const subProcessRowSpan = calculateRowSpan(rows, i, lastSubProcess, 1);
+                    if (subProcessRowSpan > 1) {
+                        subProcessCell.rowSpan = subProcessRowSpan;
+                    }
+                }
+            }
+
+            function calculateRowSpan(rows, startIndex, processValue, cellIndex) {
+                let count = 0;
+                for (let j = startIndex; j < rows.length; j++) {
+                    const row = rows[j];
+                    const processCell = row.cells[cellIndex];
+                    if (processCell.innerText === processValue) {
+                        count++;
+                    } else {
+                        break; // Stop counting if the process value changes
+                    }
+                }
+                return count;
+            }
+        });
+    </script>
+</body>
+</html>

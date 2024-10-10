@@ -81,10 +81,10 @@ WSGI_APPLICATION = 'Manufacture.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'display',
-        'USER' : 'PRODUCTIONRES',
-        'PASSWORD' : 'Res$2024',
-        'HOST' : 'productionres.mysql.database.azure.com',
+        'NAME': 'production',
+        'USER' : 'root',
+        'PASSWORD' : 'Krsna@538',
+        'HOST' : 'localhost',
         'PORT' : 3306
     }
 }
