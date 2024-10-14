@@ -4,7 +4,8 @@ from .import views
 urlpatterns = [
     path('standard/', process_list, name='process_list'),
     path('standard/add/', process_add, name='process_add'),
-    path('standard/edit/<int:pk>/', process_edit, name='process_edit'),
+    path('standard/edit/<int:process_id>/', process_edit, name='process_edit'),
+    path('standard/add-interval/<int:process_id>/', views.add_process_interval, name='add_process_interval'),
     path('sample/list/', process_list1, name='process_list1'),
     path('sample/add/', process_add1, name='process_add1'),
     path('sample/full/',process_full, name='process_full'),

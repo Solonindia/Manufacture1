@@ -19,10 +19,9 @@ class ProcessInterval(models.Model):
 
     def __str__(self):
         return f"{self.start_time} - {self.end_time}"
+    
 
 from django.db import models
-
-
 class ProcessInterval1(models.Model):
     process = models.ForeignKey(Process, related_name='intervals1', on_delete=models.CASCADE)
     start_time = models.TimeField(null=True)

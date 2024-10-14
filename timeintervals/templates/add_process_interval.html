@@ -1,0 +1,17 @@
+<!-- add_process_interval.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Process Interval</title>
+</head>
+<body>
+    <h3>Add Process Interval for {{process.main_process}}--{{ process.sub_process }}</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Interval</button>
+    </form>
+    <a href="{% url 'process_edit' process.id %}">Cancel</a>
+</body>
+</html>

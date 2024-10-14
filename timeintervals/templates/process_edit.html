@@ -3,59 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Process</title>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const formsetContainer = document.getElementById('formset-container');
-            const addButton = document.getElementById('add-form');
-
-            // Initialize formCount with a fallback to 0
-            let formCount = 0;
-
-            // Safely set formCount using data attributes
-            const totalFormsInput = document.querySelector('input[name="form-TOTAL_FORMS"]');
-            if (totalFormsInput) {
-                formCount = parseInt(totalFormsInput.value, 10) || 0;  // Ensure it’s a number
-            }
-
-            addButton.addEventListener('click', function (event) {
-                event.preventDefault();
-                
-                const newForm = formsetContainer.children[0].cloneNode(true);
-                
-                // Clear the values in the new form
-                const inputs = newForm.querySelectorAll('input, select, textarea'); // Include all input types
-                inputs.forEach(input => {
-                    input.value = '';
-                    // Update the name and id attributes
-                    const name = input.name.replace(/-\d+-/, `-${formCount}-`);
-                    const id = input.id.replace(/-\d+-/, `-${formCount}-`);
-                    input.name = name;
-                    input.id = id;
-                });
-
-                // Append the new form to the formset container
-                formsetContainer.appendChild(newForm);
-                
-                formCount++;
-                updateManagementForm();
-            });
-
-            function updateManagementForm() {
-                const managementForm = document.querySelector('input[name="form-TOTAL_FORMS"]');
-                managementForm.value = formCount; // Update the total forms count
-            }
-        });
-    </script>
 </head>
 <body>
-    <h1>Edit Process</h1>
+    <h1>Edit Process: {{ process.name }}</h1>  <!-- Assuming Process has a 'name' field -->
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}  <!-- Main Process form fields -->
         
         <h2>Time Intervals</h2>
         <div id="formset-container">
-            {{ formset.management_form }}
+            {{ formset.management_form }}  <!-- Management form for formset -->
             {% for form in formset %}
                 <div>
                     {{ form.as_p }}  <!-- Each interval form (start_time, end_time, info) -->
@@ -63,7 +20,8 @@
             {% endfor %}
         </div>
 
-        <button type="button" id="add-form">Add Time Interval</button> <!-- Button to add new interval -->
+        <a href="{% url 'add_process_interval' process.id %}">Add New Interval</a> <!-- Link to add a new interval -->
+        
         <button type="submit">Save</button>
     </form>
     <a href="{% url 'process_list' %}">Cancel</a>
