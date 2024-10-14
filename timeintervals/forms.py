@@ -23,7 +23,6 @@ class ProcessIntervalForm(forms.ModelForm):
 
         # Set initial values if editing
         if self.instance.pk:
-            # Check if start_time, end_time, and startend_time are not None
             if self.instance.start_time:
                 start_dt = datetime.combine(datetime.today(), self.instance.start_time)
                 self.fields['start_time'].initial = f"{start_dt:%H:%M}-{(start_dt + timedelta(minutes=10)):%H:%M}"
@@ -69,13 +68,13 @@ ProcessIntervalFormSet = inlineformset_factory(
 )
 
 from django import forms
-from .models import Process1, ProcessInterval1
+from .models import ProcessInterval1
 from django.forms import inlineformset_factory
 from datetime import timedelta, datetime
 
 class ProcessForm1(forms.ModelForm):
     class Meta:
-        model = Process1
+        model = Process
         fields = ['main_process', 'sub_process','additional_info']
 
 class ProcessIntervalForm1(forms.ModelForm):
@@ -108,9 +107,9 @@ class ProcessIntervalForm1(forms.ModelForm):
     
 # Create a formset to handle the ProcessInterval objects using the custom form
 ProcessIntervalFormSet1 = inlineformset_factory(
-    Process1,
+    Process,
     ProcessInterval1,
-    form=ProcessIntervalForm,
+    form=ProcessIntervalForm1,
     fields=['start_time', 'end_time', 'startend_time', 'start_info', 'end_info'],
     extra=1,  
 )
@@ -138,3 +137,4 @@ class SignUpForm(forms.ModelForm):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput)
+

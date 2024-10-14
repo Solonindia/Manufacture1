@@ -195,3 +195,4 @@ def process_edit2(request,pk):
         formset = ProcessIntervalFormSet(queryset=ProcessInterval1.objects.none())  # Ensures empty formset on GET
 
     return render(request, 'process_edit2.html', {'formset': formset})
+
