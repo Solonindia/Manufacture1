@@ -23,7 +23,6 @@ class ProcessIntervalForm(forms.ModelForm):
 
         # Set initial values if editing
         if self.instance.pk:
-            # Check if start_time, end_time, and startend_time are not None
             if self.instance.start_time:
                 start_dt = datetime.combine(datetime.today(), self.instance.start_time)
                 self.fields['start_time'].initial = f"{start_dt:%H:%M}-{(start_dt + timedelta(minutes=10)):%H:%M}"
