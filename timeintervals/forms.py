@@ -1,6 +1,6 @@
 from django import forms
 from .models import Process, ProcessInterval
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory,BaseInlineFormSet
 from datetime import timedelta, datetime
 
 class ProcessForm(forms.ModelForm):
@@ -11,7 +11,7 @@ class ProcessForm(forms.ModelForm):
 class ProcessIntervalForm(forms.ModelForm):
     class Meta:
         model = ProcessInterval
-        fields = ['start_time', 'end_time', 'startend_time', 'start_info', 'end_info']
+        fields = ['start_time', 'end_time', 'startend_time', 'start_info', 'end_info']  
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,14 +57,23 @@ class ProcessIntervalForm(forms.ModelForm):
             start_time += 10  # Increment by 10 minutes
 
         return choices
-    
-# Create a formset to handle the ProcessInterval objects using the custom form
+
+# Custom formset without delete checkbox
+class ProcessIntervalFormSet(BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove the delete checkbox from each form
+        for form in self.forms:
+            form.fields.pop('DELETE', None)
+
+# Create the inline formset using the custom formset class
 ProcessIntervalFormSet = inlineformset_factory(
     Process,
     ProcessInterval,
     form=ProcessIntervalForm,
+    formset=ProcessIntervalFormSet,
     fields=['start_time', 'end_time', 'startend_time', 'start_info', 'end_info'],
-    extra=1,  
+    extra=0,  
 )
 
 from django import forms

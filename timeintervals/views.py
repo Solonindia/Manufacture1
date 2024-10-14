@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Process,ProcessInterval
-from .forms import ProcessForm, ProcessIntervalFormSet
+from .forms import ProcessForm, ProcessIntervalFormSet,ProcessIntervalForm
 from datetime import datetime, timedelta
 from itertools import groupby
 from django.utils import timezone
@@ -71,7 +71,6 @@ def process_list(request):
     
     grouped_processes = []
     
-    # Group by main_process and sub_process
     for key, group in groupby(processes, key=lambda p: (p.main_process, p.sub_process)):
         grouped_processes.append(list(group))
 
@@ -90,7 +89,6 @@ def process_list(request):
             end_infos = []
             startend_infos = []
             
-            # Get the additional_info directly from the process
             additional_info = process.additional_info  
 
             for interval in process.intervals.all():
@@ -112,11 +110,10 @@ def process_list(request):
                     time_range = f"{formatted_startend_time}-{next_startend_time}"
                     startend_infos.append({'time_range': time_range, 'info': interval.start_info})
 
-            # Attach start, end, and startend information to the process
             process.start_infos = start_infos
             process.end_infos = end_infos
             process.startend_infos = startend_infos
-            process.additional_info = additional_info  # Store additional info
+            process.additional_info = additional_info
 
     return render(request, 'process_list.html', {
         'grouped_processes': grouped_processes,
@@ -156,33 +153,45 @@ def process_add(request):
 
     return render(request, 'process_add.html', {'form': form, 'formset': formset})
 
-def process_edit(request, pk):
-    process = get_object_or_404(Process, pk=pk)
-    
-    if request.method == 'POST':
-        form = ProcessForm(request.POST, instance=process)
-        formset = ProcessIntervalFormSet(request.POST, instance=process)
-        
-        if form.is_valid() and formset.is_valid():
-            form.save()  # Save the main process
-            intervals = formset.save(commit=False)  # Do not commit yet
-            
-            for interval in intervals:
-                interval.process = process  # Associate the interval with the process
-                
-                # No calculation for startend_time, leave it as is (if it's filled, it's saved; if not, it stays empty)
-                interval.save()  # Now save the interval
+def process_edit(request, process_id):
+    process = get_object_or_404(Process, pk=process_id)  # Fetch the process object
 
-            return redirect('process_list')
+    # Initialize the main form and the formset
+    if request.method == 'POST':
+        form = ProcessForm(request.POST, instance=process)  # Edit the existing process
+        formset = ProcessIntervalFormSet(request.POST, instance=process)  # Edit the existing intervals
+        
+        if form.is_valid() and formset.is_valid():  # Check both forms for validity
+            form.save()  # Save the main process form
+            formset.save()  # Save the intervals formset
+            return redirect('process_list')  # Redirect to the process list after saving
     else:
-        form = ProcessForm(instance=process)
-        formset = ProcessIntervalFormSet(instance=process)  # Fetch existing intervals
+        form = ProcessForm(instance=process)  # If GET request, just load the existing process
+        formset = ProcessIntervalFormSet(instance=process)  # Load the existing intervals
 
     return render(request, 'process_edit.html', {
-        'form': form,
-        'formset': formset,
+        'form': form,  # Pass the main form to the template
+        'formset': formset,  # Pass the formset to the template
+        'process': process,  # Optionally pass the process object to the template if needed
     })
 
+def add_process_interval(request, process_id):
+    process = get_object_or_404(Process, pk=process_id)
+
+    if request.method == 'POST':
+        form = ProcessIntervalForm(request.POST)
+        if form.is_valid():
+            interval = form.save(commit=False)  # Do not save yet
+            interval.process = process  # Associate with the correct process
+            interval.save()  # Now save it
+            return redirect('process_edit', process_id=process.id)  # Use process_id instead of pk
+    else:
+        form = ProcessIntervalForm()
+
+    return render(request, 'add_process_interval.html', {
+        'form': form,
+        'process': process,
+    })
 
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import ProcessInterval1
