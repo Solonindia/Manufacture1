@@ -200,6 +200,7 @@ from datetime import datetime, timedelta
 from itertools import groupby
 from django.utils import timezone
 import pandas as pd
+import pytz
 
 def Home(request):
     return render(request, 'Home.html')
@@ -207,58 +208,58 @@ def Home(request):
 def process_list1(request):
     processes = Process.objects.prefetch_related('intervals1').all().order_by('created_at')
     
-    grouped_processes = []
-    
-    # Group by main_process and sub_process
-    for key, group in groupby(processes, key=lambda p: (p.main_process, p.sub_process)):
-        grouped_processes.append(list(group))
+    # Group processes by main_process and sub_process
+    grouped_processes = [
+        list(group) for key, group in groupby(processes, key=lambda p: (p.main_process, p.sub_process))
+    ]
 
-    # Get current time
-    now = datetime.now()
+    # Get the current time in the server's timezone and convert to the local timezone if needed
+    local_timezone = pytz.timezone('Asia/Kolkata')  # Replace with your timezone if different
+    now = timezone.now().astimezone(local_timezone)
     start_time = now.replace(second=0, microsecond=0, minute=(now.minute // 10) * 10)  # Round down to the nearest 10 minutes
-    end_time = now + timedelta(hours=6)    # End at 6 hours after current time
+    end_time = start_time + timedelta(hours=6)  # End 6 hours from the current time
 
+    # Generate 10-minute intervals from start_time to end_time
     time_intervals = []
-
     while start_time < end_time:
         next_time = start_time + timedelta(minutes=10)
         time_range = f"{start_time.strftime('%H:%M')}-{next_time.strftime('%H:%M')}"
         time_intervals.append(time_range)
         start_time = next_time
 
+    # Process each grouped process
     for group in grouped_processes:
         for process in group:
             start_infos = []
             end_infos = []
             startend_infos = []
-            
             additional_info = process.additional_info  
 
-            for interval in process.intervals1.all():  # Use intervals1 only
+            # Iterate over the intervals1 related to this process
+            for interval in process.intervals1.all():
+                # Start Time Range
                 if interval.start_time:
                     formatted_start_time = interval.start_time.strftime('%H:%M')
                     next_start_time = (datetime.combine(datetime.today(), interval.start_time) + timedelta(minutes=10)).strftime('%H:%M')
-                    time_range = f"{formatted_start_time}-{next_start_time}"
-                    start_infos.append({'time_range': time_range, 'info': interval.start_info})
+                    start_infos.append({'time_range': f"{formatted_start_time}-{next_start_time}", 'info': interval.start_info})
 
+                # End Time Range
                 if interval.end_time:
                     formatted_end_time = interval.end_time.strftime('%H:%M')
                     next_end_time = (datetime.combine(datetime.today(), interval.end_time) + timedelta(minutes=10)).strftime('%H:%M')
-                    time_range = f"{formatted_end_time}-{next_end_time}"
-                    end_infos.append({'time_range': time_range, 'info': interval.end_info})
+                    end_infos.append({'time_range': f"{formatted_end_time}-{next_end_time}", 'info': interval.end_info})
 
-                # Use the correct attribute name here
-                if interval.startend_time:  
+                # Start-End Time Range
+                if interval.startend_time:
                     formatted_startend_time = interval.startend_time.strftime('%H:%M')
                     next_startend_time = (datetime.combine(datetime.today(), interval.startend_time) + timedelta(minutes=10)).strftime('%H:%M')
-                    time_range = f"{formatted_startend_time}-{next_startend_time}"
-                    startend_infos.append({'time_range': time_range, 'info': interval.start_info})  # Change 'start_info' if necessary
+                    startend_infos.append({'time_range': f"{formatted_startend_time}-{next_startend_time}", 'info': interval.start_info})
 
-            # Attach start, end, and startend information to the process
+            # Attach information to the process
             process.start_infos = start_infos
             process.end_infos = end_infos
             process.startend_infos = startend_infos
-            process.additional_info = additional_info  # Store additional info
+            process.additional_info = additional_info
 
     return render(request, 'process_list1.html', {
         'grouped_processes': grouped_processes,
