@@ -131,7 +131,7 @@
                                 <td rowspan="{{ group|length }}" style="background-color:rgb(188,247,188);">{{ process.sub_process }}</td>
                                 {% with process.sub_process as last_sub_process %}{% endwith %}
                             {% endif %}
-                            <td style="background-color:rgb(247,230,206);">{{ process.additional_info }}</td>
+                            <td style="background-color:rgb(247,230,206);">{{ process.add_info }}</td>
                             <!-- Loop through time intervals -->
                             {% for time in time_intervals %}
                             <td class="time-cell" 

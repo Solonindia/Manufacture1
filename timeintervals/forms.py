@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 class ProcessForm(forms.ModelForm):
     class Meta:
         model = Process
-        fields = ['main_process', 'sub_process','additional_info']
+        fields = ['main_process', 'sub_process','add_info']
 
 class ProcessIntervalForm(forms.ModelForm):
     class Meta:
@@ -84,7 +84,7 @@ from datetime import timedelta, datetime
 class ProcessForm1(forms.ModelForm):
     class Meta:
         model = Process
-        fields = ['main_process', 'sub_process','additional_info']
+        fields = ['main_process', 'sub_process','add_info']
 
 class ProcessIntervalForm1(forms.ModelForm):
     class Meta:

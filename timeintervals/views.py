@@ -100,7 +100,7 @@ def process_list(request):
             end_infos = []
             startend_infos = []
 
-            additional_info = process.additional_info  
+            add_info = process.add_info  
 
             for interval in process.intervals.all():
                 if interval.start_time:
@@ -124,7 +124,7 @@ def process_list(request):
             process.start_infos = start_infos
             process.end_infos = end_infos
             process.startend_infos = startend_infos
-            process.additional_info = additional_info
+            process.add_info = add_info
 
     return render(request, 'process_list.html', {
         'grouped_processes': grouped_process_list,
@@ -300,7 +300,7 @@ def process_full(request):
             start_infos = []
             end_infos = []
             startend_infos = []            
-            additional_info = process.additional_info  
+            add_info = process.add_info  
 
             for interval in process.intervals1.all():  # Use intervals1 only
                 if interval.start_time:
@@ -325,7 +325,7 @@ def process_full(request):
             process.start_infos = start_infos
             process.end_infos = end_infos
             process.startend_infos = startend_infos
-            process.additional_info = additional_info  # Store additional info
+            process.add_info = add_info  # Store additional info
 
     return render(request, 'process_list1.html', {
         'grouped_processes': grouped_processes,

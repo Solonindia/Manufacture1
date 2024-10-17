@@ -68,7 +68,7 @@
             width: 150px; /* Original width for other cells */
             height: 40px; /* Set fixed height for all cells */
             text-align: center; /* Center text in cells */
-            border: 1px solid #ccc; /* Add border to cells */
+            border: 1px solid #0a0a0a; /* Add border to cells */
             overflow: hidden; /* Hide overflow content */
             text-overflow: ellipsis; /* Show ellipsis for overflow content */
             white-space: nowrap; /* Prevent line breaks within cells */
@@ -82,7 +82,6 @@
     
         th:nth-child(2), td:nth-child(2) {
             width: 300px; /* Increased width for the sub process */
-            text-align: left;
         }
     
         th {
@@ -91,6 +90,24 @@
     
         .time-cell {
             vertical-align: middle; /* Ensure vertical alignment */
+        }
+        .info {
+            display: flex; /* Aligns children in a row */
+            align-items: center; /* Centers them vertically */
+            gap: 20px; /* Space between date and project */
+            margin-left: 20px; /* Left margin for overall alignment */
+        }
+
+        /* Align project name and buttons in one line */
+        .edit-mode, #projectNameDisplay {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px; /* Space between input and button */
+        }
+
+        /* Hide elements initially */
+        .hidden {
+            display: none;
         }
     </style>       
 </head>
@@ -107,23 +124,26 @@
     <button type="button"><a href="{% url 'process_list1' %}">Current</a></button>
     
     <h1>Production Live</h1>
-    
+    <div class="info">
+        <div> <b>Date:</b> <span id="currentDate"></span></div>
+        <div>
+            <b>Project:</b>
+            <span id="projectNameContainer" class="edit-mode hidden">
+                <input type="text" id="projectNameInput" placeholder="Enter project name" />
+                <button id="saveButton" type="button">Save</button>
+            </span>
+            <span id="projectNameDisplay">
+                <span id="projectNameText"></span>
+                <button id="editButton" type="button">Edit</button>
+            </span>
+        </div>
+    </div><br>
     <table border="1" cellspacing="0" id="processTable">
         <thead>
             <tr>
-                <th style="background-color:rgb(230,231,227);">Date: <span id="currentDate"></span></th>
-                <th style="background-color:rgb(230,231,227);">
-                    Project: 
-                    <div id="projectNameContainer" class="edit-mode">
-                        <input type="text" id="projectNameInput" placeholder="Enter project name" />
-                        <button id="saveButton" type="button">Save</button>
-                    </div><br>
-                    <div id="projectNameDisplay" class="hidden">
-                        <span id="projectNameText"></span>
-                        <button id="editButton" type="button">Edit</button>
-                    </div>
-                </th>
-                <th style="background-color:rgb(230,231,227);"></th>
+                <th style="background-color:rgb(230,231,227);">Main Process</th>
+                <th style="background-color:rgb(230,231,227);">Sub Process</th>
+                <th style="background-color:rgb(230,231,227);">Add Info</th>
                 {% for time in time_intervals %}
                     <th style="background-color:rgb(230,231,227);">{{ time }}</th>
                 {% endfor %}
@@ -141,10 +161,10 @@
                             {% endif %}
                             
                             {% if process.sub_process != last_sub_process %}
-                                <td rowspan="{{ group|length }}" style="background-color:rgb(188,247,188);">{{ process.sub_process }}</td>
+                                <td rowspan="{{ group|length }}" style="background-color:rgb(188,247,188);text-align: left;">{{ process.sub_process }}</td>
                                 {% with process.sub_process as last_sub_process %}{% endwith %}
                             {% endif %}
-                            <td style="background-color:rgb(247,230,206);">{{ process.additional_info }}</td>
+                            <td style="background-color:rgb(247,230,206);">{{ process.add_info }}</td>
                             <!-- Loop through time intervals -->
                             {% for time in time_intervals %}
                             <td class="time-cell" 

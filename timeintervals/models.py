@@ -3,7 +3,7 @@ from django.db import models
 class Process(models.Model):
     main_process = models.CharField(max_length=100, null=True)
     sub_process = models.CharField(max_length=100, null=True)
-    additional_info = models.CharField(max_length=255, blank=True)  # New additional info field
+    add_info = models.CharField(max_length=255, blank=True)  # New additional info field
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
