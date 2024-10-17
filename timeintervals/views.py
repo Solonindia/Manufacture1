@@ -244,7 +244,7 @@ def process_list1(request):
             start_infos = []
             end_infos = []
             startend_infos = []
-            additional_info = process.additional_info  
+            add_info = process.add_info  
 
             # Iterate over the intervals1 related to this process
             for interval in process.intervals1.all():
@@ -270,7 +270,7 @@ def process_list1(request):
             process.start_infos = start_infos
             process.end_infos = end_infos
             process.startend_infos = startend_infos
-            process.additional_info = additional_info
+            process.add_info = add_info
 
     return render(request, 'process_list1.html', {
         'grouped_processes': grouped_processes,
