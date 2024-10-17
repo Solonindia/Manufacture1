@@ -14,6 +14,7 @@
             align-items: center;
             box-sizing: border-box;
             background-color: #f5f5f5;
+            position: relative; /* Added for absolute positioning of links */
         }
         .background-container {
             width: 50%;
@@ -78,23 +79,9 @@
             border-radius: 10px;
             cursor: pointer;
             text-align: center;
-            width: 100%;
+            width: 30%;
             margin-top: 10px;
-        }
-        .signup-container .links {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30%;
-            margin-right: 50%;
-        }
-        .signup-container .links a {
-            color: #04035c;
-            text-decoration: none;
-            font-size: 16px;
-        }
-        .signup-container .links a:hover {
-            text-decoration: underline;
-            color:blueviolet;
+            margin-left: 40%;
         }
         .logo {
             position: absolute;
@@ -108,12 +95,33 @@
             font-size: 14px;
             margin-bottom: 20px;
         }
+        .link-container {
+            position: absolute; /* Positioned at the top right corner */
+            top: 20px; /* Adjust as needed */
+            right: 20px; /* Adjust as needed */
+            display: flex; /* Use flexbox to align items horizontally */
+            gap: 10px; /* Add space between the links */
+        }
+
+        .home-link {
+            font-size: 16px;
+            color: rgb(66, 4, 107);
+            text-decoration: none; /* Remove underline */
+        }
+
+        .home-link:hover {
+            color: blue; /* Change color on hover */
+        }
     </style>
 </head>
-<body>
-    <div class="background-container">
-        <img src="/static/images/logo.webp" alt="Logo" class="logo">
-    </div>
+<body> 
+    <!-- Links to Dashboard and Home -->
+    <div class="link-container">
+        <a href="{% url 'home' %}" class="home-link"><b>Home</b></a>
+        <a href="{% url 'button_page' %}" class="home-link"><b>Logout</b></a>
+    </div> 
+    <div class="background-container"></div>
+    <img src="/static/images/logo.webp" alt="Logo" class="logo">
     <div class="signup-container">
         <h2>Employee Signup</h2>
         
@@ -121,9 +129,7 @@
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                    <p class="{% if message.tags %}{{ message.tags }}{% endif %}">
-                        {{ message }}
-                    </p>
+                    <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
                 {% endfor %}
             </div>
         {% endif %}
@@ -146,11 +152,7 @@
             {% endfor %}
             <button type="submit">SIGN UP</button>
         </form>
-        
-        <!-- Links to Dashboard and Home -->
-        <div class="links">
-            <a href="{% url 'button_page' %}"><b>Home</b></a>
-        </div>
+   
     </div>
 </body>
 </html>

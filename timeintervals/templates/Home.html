@@ -14,7 +14,7 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            position: relative; /* Ensure relative positioning for the Home link */
+            position: relative;
         }
 
         .background-container {
@@ -116,18 +116,16 @@
             background-color: rgba(250, 244, 244, 0.2);
         }
 
-        /* Home link in the bottom left corner */
         .home-link {
             position: fixed;
-            bottom: 20px;
-            left: 10px;
+            top: 20px;
+            right: 20px;
             font-size: 16px;
             color: rgb(66, 4, 107);
-
+            text-decoration: none; /* Prevent underline */
         }
         .home-link:hover {
-            text-decoration: underline;
-            color:blue;
+            color: blue;
         }
     </style>
 </head>
@@ -150,8 +148,8 @@
             <div></div>
         </button>
 
-        <!-- Home link in the bottom left corner -->
-        <a href="{% url 'button_page' %}" class="home-link"><b>Home</b></a>
+        <!-- Home link in the top right corner -->
+        <a href="{% url 'button_page' %}" class="home-link"><b>Logout</b></a>
     </div>
 
     <script>

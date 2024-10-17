@@ -10,49 +10,112 @@
             top: 10px;
             left: 20px;
         }
-
+    
         .logo {
             width: 70px;
             height: auto;
         }
+    
         body {
             background-color: aliceblue;
             text-align: center;
         }
+    
         .hidden {
             display: none;
         }
+    
         .start {
             background-color: rgb(198, 243, 198); /* Green for START */
             color: darkgreen;
         }
+    
         .end {
             background-color: lightcoral; /* Red for END */
             color: darkred;
         }
+    
         .startend {
             background-color: lightpink; /* Orange for START/END */
             color: rgb(10, 10, 10);
         }
-
-    </style>
+    
+        .link-container {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: flex; /* Use flexbox to align items horizontally */
+            gap: 10px; /* Add space between the links */
+        }
+    
+        .home-link {
+            font-size: 16px;
+            color: rgb(66, 4, 107);
+            text-decoration: none; /* Remove underline */
+        }
+    
+        .home-link:hover {
+            color: blue; /* Change color on hover */
+        }
+    
+        table {
+            width: 100%; /* Make table full width */
+            border-collapse: collapse; /* Combine borders */
+            table-layout: fixed; /* Set fixed layout to ensure equal cell sizes */
+        }
+    
+        th, td {
+            width: 150px; /* Original width for other cells */
+            height: 40px; /* Set fixed height for all cells */
+            text-align: center; /* Center text in cells */
+            border: 1px solid #050505; /* Add border to cells */
+            overflow: hidden; /* Hide overflow content */
+            text-overflow: ellipsis; /* Show ellipsis for overflow content */
+            white-space: nowrap; /* Prevent line breaks within cells */
+            vertical-align: middle; /* Center content vertically */
+        }
+    
+        /* Specific widths for the first two columns */
+        th:nth-child(1), td:nth-child(1) {
+            width: 200px; /* Increased width for the main process */
+        }
+    
+        th:nth-child(2), td:nth-child(2) {
+            width: 300px; /* Increased width for the sub process */
+            text-align: left;
+        }
+    
+        th {
+            background-color: rgb(230,231,227);
+        }
+    
+        .time-cell {
+            vertical-align: middle; /* Ensure vertical alignment */
+        }
+    </style>       
 </head>
 <body>
     <div class="logo-container">
         <img src="/static/images/logo.webp" alt="Logo" class="logo">
     </div>
+    
+    <div class="link-container">
+        <a href="{% url 'home' %}" class="home-link"><b>Home</b></a>
+        <a href="{% url 'button_page' %}" class="home-link"><b>Logout</b></a>
+    </div>
+    
     <button id="export-btn">Export to Excel</button>
     <h1>Standard Production Data</h1>
-    <table border="3" cellspacing="0" id="processTable">
+    <table id="processTable">
         <thead>
             <tr>
-                <th style=background-color:rgb(230,231,227);>Date:</th>
-                <th style=background-color:rgb(230,231,227);>Project:Pragati</th>
-                <th style=background-color:rgb(230,231,227);></th>
+                <th>Process</th>
+                <th>Sub process</th>
+                <th>Add info</th>
                 {% for time in time_intervals %}
-                    <th style=background-color:rgb(230,231,227);><b>{{ time }}</b></th>
+                    <th><b>{{ time }}</b></th>
                 {% endfor %}
-                <th style=background-color:rgb(230,231,227);color:brown;>Actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -61,14 +124,14 @@
                     {% for process in group %}
                         <tr>
                             {% if process.main_process != last_main_process %}
-                                <td rowspan="{{ group|length }}" style=background-color:rgba(155,239,253,0.397);>{{ process.main_process }}</td>
+                                <td rowspan="{{ group|length }}" style="background-color:rgba(155,239,253,0.397);">{{ process.main_process }}</td>
                                 {% with process.main_process as last_main_process %}{% endwith %}
                             {% endif %}
                             {% if process.sub_process != last_sub_process %}
-                                <td rowspan="{{ group|length }}" style=background-color:rgb(188,247,188);>{{ process.sub_process }}</td>
+                                <td rowspan="{{ group|length }}" style="background-color:rgb(188,247,188);">{{ process.sub_process }}</td>
                                 {% with process.sub_process as last_sub_process %}{% endwith %}
                             {% endif %}
-                            <td style=background-color:rgb(247,230,206);>{{ process.additional_info }}</td>
+                            <td style="background-color:rgb(247,230,206);">{{ process.additional_info }}</td>
                             <!-- Loop through time intervals -->
                             {% for time in time_intervals %}
                             <td class="time-cell" 
@@ -88,6 +151,7 @@
                                 {% endif %}
                             {% endfor %}>
                             
+
                             {% for start_info in process.start_infos %}
                                 {% if start_info.time_range == time %}
                                     <span>START<br>{{ start_info.info }}</span><br>
@@ -105,7 +169,7 @@
                             {% endfor %}
                         </td>
                             {% endfor %}
-                            <td style=background-color:rgb(230,231,227);>
+                            <td>
                                 <a href="{% url 'process_edit' process.pk %}">Edit</a>
                             </td>
                         </tr>
@@ -166,20 +230,21 @@
             return count;
         }
     });
+
     // Export to Excel functionality
     document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('export-btn').addEventListener('click', function() {
-        // Clone the table to avoid modifying the original table
-        var table = document.querySelector('table').cloneNode(true);
-        
-        // Remove buttons from the cloned table
-        var buttons = table.querySelectorAll('button');
-        buttons.forEach(button => button.remove());
+        document.getElementById('export-btn').addEventListener('click', function() {
+            // Clone the table to avoid modifying the original table
+            var table = document.querySelector('table').cloneNode(true);
+            
+            // Remove buttons from the cloned table
+            var buttons = table.querySelectorAll('button');
+            buttons.forEach(button => button.remove());
 
-        // Convert the modified table to a workbook
-        var workbook = XLSX.utils.table_to_book(table);
-        XLSX.writeFile(workbook, 'data.xlsx');
+            // Convert the modified table to a workbook
+            var workbook = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(workbook, 'data.xlsx');
+        });
     });
-});
 </script>
 </html>

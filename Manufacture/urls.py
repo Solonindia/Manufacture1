@@ -22,7 +22,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('time/',include('timeintervals.urls')),
-    path('status/',include('status.urls')),
 
 ]
 if settings.DEBUG:

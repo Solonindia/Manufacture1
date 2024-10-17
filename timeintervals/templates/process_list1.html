@@ -10,76 +10,99 @@
             top: 10px;
             left: 20px;
         }
-
+    
         .logo {
             width: 70px;
             height: auto;
         }
-
+    
         body {
             background-color: aliceblue;
             text-align: center;
         }
-
+    
         .hidden {
             display: none;
         }
-
+    
         .start {
-            background-color: rgb(198, 243, 198);
+            background-color: rgb(198, 243, 198); /* Green for START */
             color: darkgreen;
         }
-
+    
         .end {
-            background-color: lightcoral;
+            background-color: lightcoral; /* Red for END */
             color: darkred;
         }
-
+    
         .startend {
-            background-color: lightpink;
+            background-color: lightpink; /* Orange for START/END */
             color: rgb(10, 10, 10);
         }
-
-        .edit-mode input {
-            width: 200px;
-            text-align: center;
+    
+        .link-container {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: flex; /* Use flexbox to align items horizontally */
+            gap: 10px; /* Add space between the links */
         }
-
-        button {
-            margin: 10px;
+    
+        .home-link {
+            font-size: 16px;
+            color: rgb(66, 4, 107);
+            text-decoration: none; /* Remove underline */
         }
-
-        a {
-            text-decoration: none;
-            color: inherit;
+    
+        .home-link:hover {
+            color: blue; /* Change color on hover */
         }
-
-        #projectNameDisplay {
-            display: flex;
-            justify-content: space-between;
+    
+        table {
+            width: 100%; /* Make table full width */
+            border-collapse: collapse; /* Combine borders */
+            table-layout: fixed; /* Set fixed layout to ensure equal cell sizes */
         }
-
-        #editButton {
-            display: none;
+    
+        th, td {
+            width: 150px; /* Original width for other cells */
+            height: 40px; /* Set fixed height for all cells */
+            text-align: center; /* Center text in cells */
+            border: 1px solid #ccc; /* Add border to cells */
+            overflow: hidden; /* Hide overflow content */
+            text-overflow: ellipsis; /* Show ellipsis for overflow content */
+            white-space: nowrap; /* Prevent line breaks within cells */
+            vertical-align: middle; /* Center content vertically */
         }
-
-        th:hover #editButton {
-            display: inline-block;
+    
+        /* Specific widths for the first two columns */
+        th:nth-child(1), td:nth-child(1) {
+            width: 200px; /* Increased width for the main process */
         }
-
-        .last-links {
-            color: darkblue;
+    
+        th:nth-child(2), td:nth-child(2) {
+            width: 300px; /* Increased width for the sub process */
+            text-align: left;
         }
-
-        .last-links:hover {
-            text-decoration: underline;
+    
+        th {
+            background-color: rgb(230,231,227);
         }
-    </style>
+    
+        .time-cell {
+            vertical-align: middle; /* Ensure vertical alignment */
+        }
+    </style>       
 </head>
 <body>
     <div class="logo-container">
         <img src="/static/images/logo.webp" alt="Company Logo" class="logo">
     </div>
+    <div class="link-container">
+        <a href="{% url 'home' %}" class="home-link"><b>Home</b></a>
+        <a href="{% url 'button_page' %}" class="home-link"><b>Logout</b></a>
+    </div>
+    
     <button type="button"><a href="{% url 'process_full' %}">Full</a></button>
     <button type="button"><a href="{% url 'process_list1' %}">Current</a></button>
     

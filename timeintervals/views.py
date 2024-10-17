@@ -4,7 +4,7 @@ from .forms import ProcessForm, ProcessIntervalFormSet,ProcessIntervalForm
 from datetime import datetime, timedelta
 from itertools import groupby
 from django.utils import timezone
-from status.models import Process1,ProcessInterval1
+from .models import ProcessInterval1
 from .forms import SignUpForm,LoginForm
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
@@ -66,14 +66,24 @@ def login1_view(request):
 
     return render(request, 'login.html', {'form': form})
 
+from collections import defaultdict
+
 def process_list(request):
     processes = Process.objects.prefetch_related('intervals').all().order_by('created_at')
-    
-    grouped_processes = []
-    
-    for key, group in groupby(processes, key=lambda p: (p.main_process, p.sub_process)):
-        grouped_processes.append(list(group))
 
+    # Group processes by main_process and sub_process
+    grouped_processes = defaultdict(list)
+
+    for process in processes:
+        key = (process.main_process, process.sub_process)
+        grouped_processes[key].append(process)
+
+    # Convert the defaultdict to a list of lists for rendering
+    grouped_process_list = []
+    for key, group in grouped_processes.items():
+        grouped_process_list.append(group)
+
+    # Prepare time intervals
     time_intervals = []
     start_time = datetime.strptime('08:30', '%H:%M')
     end_time = datetime.strptime('00:00', '%H:%M') + timedelta(days=1)
@@ -83,12 +93,13 @@ def process_list(request):
         time_intervals.append(f"{start_time.strftime('%H:%M')}-{next_time.strftime('%H:%M')}")
         start_time = next_time
 
-    for group in grouped_processes:
+    # Prepare process information with intervals
+    for group in grouped_process_list:
         for process in group:
             start_infos = []
             end_infos = []
             startend_infos = []
-            
+
             additional_info = process.additional_info  
 
             for interval in process.intervals.all():
@@ -116,7 +127,7 @@ def process_list(request):
             process.additional_info = additional_info
 
     return render(request, 'process_list.html', {
-        'grouped_processes': grouped_processes,
+        'grouped_processes': grouped_process_list,
         'time_intervals': time_intervals,
     })
 
