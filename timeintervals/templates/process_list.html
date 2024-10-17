@@ -41,11 +41,12 @@
         }
     
         .link-container {
-            position: absolute;
-            top: 10px;
-            right: 20px;
+            position: fixed; /* Change to fixed positioning */
+            top: 20px; /* Position from the top */
+            right: 20px; /* Position from the right */
             display: flex; /* Use flexbox to align items horizontally */
             gap: 10px; /* Add space between the links */
+            z-index: 1000; /* Ensure it is above other elements */
         }
     
         .home-link {
@@ -82,7 +83,6 @@
     
         th:nth-child(2), td:nth-child(2) {
             width: 300px; /* Increased width for the sub process */
-            text-align: left;
         }
     
         th {
@@ -109,8 +109,8 @@
     <table id="processTable">
         <thead>
             <tr>
-                <th>Process</th>
-                <th>Sub process</th>
+                <th>Main Process</th>
+                <th>Sub Process</th>
                 <th>Add info</th>
                 {% for time in time_intervals %}
                     <th><b>{{ time }}</b></th>
@@ -128,7 +128,7 @@
                                 {% with process.main_process as last_main_process %}{% endwith %}
                             {% endif %}
                             {% if process.sub_process != last_sub_process %}
-                                <td rowspan="{{ group|length }}" style="background-color:rgb(188,247,188);">{{ process.sub_process }}</td>
+                                <td rowspan="{{ group|length }}" style="background-color:rgb(188,247,188);text-align: left;">{{ process.sub_process }}</td>
                                 {% with process.sub_process as last_sub_process %}{% endwith %}
                             {% endif %}
                             <td style="background-color:rgb(247,230,206);">{{ process.add_info }}</td>

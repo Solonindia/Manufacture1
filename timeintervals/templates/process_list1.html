@@ -39,13 +39,13 @@
             background-color: lightpink; /* Orange for START/END */
             color: rgb(10, 10, 10);
         }
-    
         .link-container {
-            position: absolute;
-            top: 10px;
-            right: 20px;
+            position: fixed; /* Change to fixed positioning */
+            top: 20px; /* Position from the top */
+            right: 20px; /* Position from the right */
             display: flex; /* Use flexbox to align items horizontally */
             gap: 10px; /* Add space between the links */
+            z-index: 1000; /* Ensure it is above other elements */
         }
     
         .home-link {
