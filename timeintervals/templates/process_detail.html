@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,9 +24,19 @@
         .hidden {
             display: none; /* Use this class to hide duplicate cells */
         }
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 70px; /* Adjust width as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
     </style>
 </head>
 <body>
+    <div class="background-container">
+        <img src="{% static 'logo.webp' %}" alt="Logo">
+    </div>
     <h1>Process Details</h1>
     <table border="1" cellspacing="0" id="processTable">
         <thead>

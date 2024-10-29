@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -96,7 +97,7 @@
 </head>
 <body>
     <div class="logo-container">
-        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+        <img src="{% static 'logo.webp' %}" alt="Logo" class="logo">
     </div>
     
     <div class="link-container">
@@ -183,39 +184,42 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const table = document.getElementById("processTable");
-        const rows = table.getElementsByTagName("tr");
-
-        let lastMainProcess = "";
-        let lastSubProcess = "";
-
-        for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-            const currentRow = rows[i];
-            const mainProcessCell = currentRow.cells[0]; // Main process column
-            const subProcessCell = currentRow.cells[1]; // Sub process column
-
-            // Hide duplicate main processes
-            if (mainProcessCell.innerText === lastMainProcess) {
-                mainProcessCell.classList.add("hidden");
-            } else {
-                lastMainProcess = mainProcessCell.innerText;
-                const mainProcessRowSpan = calculateRowSpan(rows, i, lastMainProcess, 0);
-                if (mainProcessRowSpan > 1) {
-                    mainProcessCell.rowSpan = mainProcessRowSpan;
+        updateRowSpans();
+    
+        function updateRowSpans() {
+            const rows = table.getElementsByTagName("tr");
+            let lastMainProcess = "";
+            let lastSubProcess = "";
+    
+            for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+                const currentRow = rows[i];
+                const mainProcessCell = currentRow.cells[0]; // Main process column
+                const subProcessCell = currentRow.cells[1]; // Sub process column
+    
+                // Hide duplicate main processes
+                if (mainProcessCell.innerText === lastMainProcess) {
+                    mainProcessCell.classList.add("hidden");
+                } else {
+                    lastMainProcess = mainProcessCell.innerText;
+                    const mainProcessRowSpan = calculateRowSpan(rows, i, lastMainProcess, 0);
+                    if (mainProcessRowSpan > 1) {
+                        mainProcessCell.rowSpan = mainProcessRowSpan;
+                    }
                 }
-            }
-
-            // Hide duplicate sub processes
-            if (subProcessCell.innerText === lastSubProcess) {
-                subProcessCell.classList.add("hidden");
-            } else {
-                lastSubProcess = subProcessCell.innerText;
-                const subProcessRowSpan = calculateRowSpan(rows, i, lastSubProcess, 1);
-                if (subProcessRowSpan > 1) {
-                    subProcessCell.rowSpan = subProcessRowSpan;
+    
+                // Hide duplicate sub processes
+                if (subProcessCell.innerText === lastSubProcess) {
+                    subProcessCell.classList.add("hidden");
+                } else {
+                    lastSubProcess = subProcessCell.innerText;
+                    const subProcessRowSpan = calculateRowSpan(rows, i, lastSubProcess, 1);
+                    if (subProcessRowSpan > 1) {
+                        subProcessCell.rowSpan = subProcessRowSpan;
+                    }
                 }
             }
         }
-
+    
         function calculateRowSpan(rows, startIndex, processValue, cellIndex) {
             let count = 0;
             for (let j = startIndex; j < rows.length; j++) {
@@ -229,22 +233,52 @@
             }
             return count;
         }
+    
+        // Add new process dynamically
+        function addNewProcess(newMainProcess, newSubProcess, addInfo, timeIntervals) {
+            const rows = table.getElementsByTagName("tr");
+            let mainProcessRowIndex = -1;
+    
+            // Find the row index of the existing main process
+            for (let i = 1; i < rows.length; i++) {
+                const mainProcessCell = rows[i].cells[0];
+                if (mainProcessCell.innerText === newMainProcess) {
+                    mainProcessRowIndex = i;
+                    break;
+                }
+            }
+    
+            // Create a new row for the sub-process
+            const newRow = table.insertRow(mainProcessRowIndex + 1); // Insert after the main process
+    
+            // Insert Main Process Cell (Empty if it already exists)
+            newRow.insertCell(0); // Keep this empty since we already have the main process above
+    
+            // Insert Sub Process
+            const subProcessCell = newRow.insertCell(1);
+            subProcessCell.innerText = newSubProcess;
+    
+            // Insert Add Info
+            const addInfoCell = newRow.insertCell(2);
+            addInfoCell.innerText = addInfo;
+    
+            // Insert Time Intervals
+            timeIntervals.forEach(time => {
+                const timeCell = newRow.insertCell(-1);
+                timeCell.innerText = time; // Customize this part to reflect your data
+            });
+    
+            // Insert Actions Cell
+            const actionsCell = newRow.insertCell(-1);
+            actionsCell.innerHTML = `<a href="#">Edit</a>`;
+    
+            // Update row spans after adding the new process
+            updateRowSpans();
+        }
+    
+        // Example usage of the function to add new rows
+        // Call this function where you handle the "Add" button click event
+        // addNewProcess('Process A', 'Sub A4', 'Info A4', ['09:00', '10:00']);
     });
-
-    // Export to Excel functionality
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('export-btn').addEventListener('click', function() {
-            // Clone the table to avoid modifying the original table
-            var table = document.querySelector('table').cloneNode(true);
-            
-            // Remove buttons from the cloned table
-            var buttons = table.querySelectorAll('button');
-            buttons.forEach(button => button.remove());
-
-            // Convert the modified table to a workbook
-            var workbook = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(workbook, 'data.xlsx');
-        });
-    });
-</script>
+    </script>    
 </html>

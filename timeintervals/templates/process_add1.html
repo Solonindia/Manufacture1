@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +19,7 @@
         .background-container {
             width: 50%; /* Take up half of the viewport width */
             height: 100vh; /* Full viewport height */
-            background-image: url('/static/images/bty2.webp');
+            background-image: url("{% static 'bty2.webp' %}");
             background-position: center; /* Center the image */
             background-size: cover; /* Cover the entire container */
             background-repeat: no-repeat; /* Prevent repeating the image */
@@ -73,7 +74,7 @@
 </head>
 <body>
     <div class="background-container">
-        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+        <img src="{% static 'logo.webp' %}" alt="Logo">
     </div>
     <div class="add-container">
         <h1>Add Process</h1>

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +25,11 @@
         }
 
         .logo {
-            height: 60px; /* Adjust as needed */
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 70px; /* Adjust width as needed */
+            height: auto; /* Maintain aspect ratio */
         }
 
         h3 {
@@ -101,7 +106,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="/static/images/logo.webp" alt="Logo" class="logo"> <!-- Replace with your logo path -->
+        <img src="{% static 'logo.webp' %}" alt="Logo">
         <div class="top-right">
             <a href="{% url 'home' %}" class="button">Home</a>
             <a href="{% url 'button_page' %}" class="button">Logout</a>

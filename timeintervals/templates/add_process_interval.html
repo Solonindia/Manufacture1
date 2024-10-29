@@ -1,11 +1,21 @@
-<!-- add_process_interval.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Add Process Interval</title>
+    <style>
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 70px; /* Adjust width as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
+    </style>
 </head>
 <body>
+    <img src="{% static 'logo.webp' %}" alt="Logo" class="logo">
     <h3>Add Process Interval for {{process.main_process}}--{{ process.sub_process }}</h3>
     <form method="post">
         {% csrf_token %}

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -143,7 +144,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="/static/images/logo.webp" alt="Logo" class="logo">
+        <img src="{% static 'logo.webp' %}" alt="Logo">
     </div>
     <h1>Add Process</h1>
     <form method="post">
